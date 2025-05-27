@@ -12,7 +12,7 @@ export default function Home() {
       title: "Modern Abstract",
       artist: "Jane Doe",
       price: "$299",
-      image: "/api/placeholder/300/300",
+      image: "/images/arts/modernabstractdigart.jpg",
       category: "Digital Art",
     },
     {
@@ -20,7 +20,7 @@ export default function Home() {
       title: "Architecture Draft",
       artist: "John Smith",
       price: "$150",
-      image: "/api/placeholder/300/300",
+      image: "/images/arts/architecturedraft.jpg",
       category: "Drafting",
     },
     {
@@ -28,7 +28,7 @@ export default function Home() {
       title: "Logo Design",
       artist: "Alex Chen",
       price: "$99",
-      image: "/api/placeholder/300/300",
+      image: "/images/arts/logodesign.jpg",
       category: "Design",
     },
     {
@@ -36,7 +36,7 @@ export default function Home() {
       title: "Portrait Commission",
       artist: "Maria Garcia",
       price: "$450",
-      image: "/api/placeholder/300/300",
+      image: "/images/arts/potraitcommision.jpeg",
       category: "Traditional Art",
     },
   ];
@@ -170,9 +170,12 @@ export default function Home() {
                 className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow overflow-hidden"
               >
                 <div className="aspect-square bg-gray-200 relative">
-                  <span className="absolute inset-0 flex items-center justify-center text-gray-500">
-                    {artwork.title}
-                  </span>
+                  <Image
+                    src={artwork.image}
+                    alt={artwork.title}
+                    fill
+                    className="object-cover"
+                  />
                 </div>
                 <div className="p-4">
                   <div className="flex justify-between items-start mb-2">
