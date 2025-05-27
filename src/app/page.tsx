@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -53,7 +54,14 @@ export default function Home() {
       <nav className="border-b border-gray-200 bg-white sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
+            <div className="flex items-center space-x-3">
+              <Image
+                src="/images/logos/logo_notext_whitebg.png"
+                alt="PhoRent Logo"
+                width={40}
+                height={40}
+                className="object-contain"
+              />
               <h1 className="text-2xl font-bold text-black">PhoRent</h1>
             </div>
 
