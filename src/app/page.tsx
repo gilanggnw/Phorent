@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -55,44 +56,46 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
-              <Image
-                src="/images/logos/logo_notext_whitebg.png"
-                alt="PhoRent Logo"
-                width={40}
-                height={40}
-                className="object-contain"
-              />
-              <h1 className="text-2xl font-bold text-black">PhoRent</h1>
+              <Link href="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
+                <Image
+                  src="/images/logos/logo_notext_whitebg.png"
+                  alt="PhoRent Logo"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                />
+                <h1 className="text-2xl font-bold text-black">PhoRent</h1>
+              </Link>
             </div>
 
             <div className="hidden md:flex items-center space-x-8">
-              <a
-                href="#"
+              <Link
+                href="/browse"
                 className="text-gray-900 hover:text-gray-600"
               >
                 Browse
-              </a>
-              <a
-                href="#"
+              </Link>
+              <Link
+                href="/sell"
                 className="text-gray-900 hover:text-gray-600"
               >
                 Sell
-              </a>
-              <a
-                href="#"
+              </Link>
+              <Link
+                href="/about"
                 className="text-gray-900 hover:text-gray-600"
               >
                 About
-              </a>
+              </Link>
             </div>
 
             <div className="flex items-center space-x-4">
-              <button className="text-gray-900 hover:text-gray-600">
+              <Link href="/signin" className="text-gray-900 hover:text-gray-600">
                 Sign In
-              </button>
-              <button className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800">
+              </Link>
+              <Link href="/signup" className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800">
                 Sign Up
-              </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -158,9 +161,9 @@ export default function Home() {
             <h2 className="text-3xl font-bold text-gray-900">
               Featured Artworks
             </h2>
-            <button className="text-green-600 hover:text-green-700 font-medium">
+            <Link href="/browse" className="text-green-600 hover:text-green-700 font-medium">
               View All
-            </button>
+            </Link>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -192,9 +195,12 @@ export default function Home() {
                   <p className="text-gray-500 text-xs">
                     {artwork.category}
                   </p>
-                  <button className="w-full mt-4 bg-green-600 text-white py-2 rounded-md hover:bg-green-700 transition-colors">
+                  <Link
+                    href={`/artwork/${artwork.id}`}
+                    className="block w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700 transition-colors text-center"
+                  >
                     View Details
-                  </button>
+                  </Link>
                 </div>
               </div>
             ))}
@@ -214,12 +220,12 @@ export default function Home() {
             worldwide.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="bg-green-600 text-white px-8 py-3 rounded-md text-lg hover:bg-green-700">
+            <Link href="/sell" className="bg-green-600 text-white px-8 py-3 rounded-md text-lg hover:bg-green-700 text-center">
               Start Selling
-            </button>
-            <button className="border border-white text-white px-8 py-3 rounded-md text-lg hover:bg-white hover:text-black">
+            </Link>
+            <Link href="/about" className="border border-white text-white px-8 py-3 rounded-md text-lg hover:bg-white hover:text-black text-center">
               Learn More
-            </button>
+            </Link>
           </div>
         </div>
       </section>
