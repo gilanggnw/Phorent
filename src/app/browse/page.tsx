@@ -1,83 +1,69 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
 interface Artwork {
-  id: number;
+  id: string;
   title: string;
-  artist: string;
-  price: string;
-  image: string;
-  category: string;
   description: string;
+  category: string;
+  price: number;
+  tags: string;
+  medium?: string;
+  dimensions?: string;
+  isDigital: boolean;
+  isCommission: boolean;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  userId: string;
+  user: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    avatar?: string;
+  };
+  files: Array<{
+    id: string;
+    filename: string;
+    url: string;
+    type: string;
+    size: number;
+    order: number;
+  }>;
+  _count: {
+    favorites: number;
+    reviews: number;
+  };
+}
+
+interface PaginationInfo {
+  page: number;
+  limit: number;
+  total: number;
+  pages: number;
+}
+
+interface ArtworkResponse {
+  artworks: Artwork[];
+  pagination: PaginationInfo;
 }
 
 export default function Browse() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sortBy, setSortBy] = useState("featured");
-  const [filteredArtworks, setFilteredArtworks] = useState<Artwork[]>([]);
-
-  // Extended artwork data
-  const allArtworks: Artwork[] = [
-    {
-      id: 1,
-      title: "Modern Abstract",
-      artist: "Jane Doe",
-      price: "$299",
-      image: "/images/arts/modernabstractdigart.jpg",
-      category: "Digital Art",
-      description: "A stunning modern abstract piece with vibrant colors and dynamic composition."
-    },
-    {
-      id: 2,
-      title: "Architecture Draft",
-      artist: "John Smith",
-      price: "$150",
-      image: "/images/arts/architecturedraft.jpg",
-      category: "Drafting",
-      description: "Professional architectural drafting with precise measurements and detailed specifications."
-    },
-    {
-      id: 3,
-      title: "Logo Design",
-      artist: "Alex Chen",
-      price: "$99",
-      image: "/images/arts/logodesign.jpg",
-      category: "Design",
-      description: "Creative logo design service for businesses and personal brands."
-    },
-    {
-      id: 4,
-      title: "Portrait Commission",
-      artist: "Maria Garcia",
-      price: "$450",
-      image: "/images/arts/potraitcommision.jpeg",
-      category: "Traditional Art",
-      description: "Custom portrait commission using traditional painting techniques."
-    },
-    // Add more sample artworks
-    {
-      id: 5,
-      title: "Digital Illustration",
-      artist: "Sarah Wilson",
-      price: "$199",
-      image: "/images/arts/modernabstractdigart.jpg",
-      category: "Digital Art",
-      description: "Beautiful digital illustration with contemporary style."
-    },
-    {
-      id: 6,
-      title: "Brand Identity Package",
-      artist: "Mike Johnson",
-      price: "$799",
-      image: "/images/arts/logodesign.jpg",
-      category: "Design",
-      description: "Complete brand identity package including logo, business cards, and style guide."
-    },
-  ];
+  const [artworks, setArtworks] = useState<Artwork[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState<PaginationInfo>({
+    page: 1,
+    limit: 12,
+    total: 0,
+    pages: 0
+  });
 
   const categories = ["All", "Digital Art", "Design", "Drafting", "Traditional Art"];
   const sortOptions = [
@@ -86,43 +72,49 @@ export default function Browse() {
     { value: "price-high", label: "Price: High to Low" },
     { value: "newest", label: "Newest First" },
   ];
+  // Fetch artworks from API
+  const fetchArtworks = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const params = new URLSearchParams({
+        page: pagination.page.toString(),
+        limit: pagination.limit.toString(),
+      });
+
+      if (searchQuery) {
+        params.append('search', searchQuery);
+      }
+
+      if (selectedCategory !== "All") {
+        params.append('category', selectedCategory);
+      }
+
+      if (sortBy !== "featured") {
+        params.append('sortBy', sortBy);
+      }
+
+      const response = await fetch(`/api/artworks?${params}`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch artworks');
+      }
+
+      const data: ArtworkResponse = await response.json();
+      setArtworks(data.artworks);
+      setPagination(data.pagination);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load artworks');
+      console.error('Error fetching artworks:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [searchQuery, selectedCategory, sortBy, pagination.page, pagination.limit]);
 
   useEffect(() => {
-    let filtered = allArtworks;
-
-    // Filter by search query
-    if (searchQuery) {
-      filtered = filtered.filter(
-        (artwork) =>
-          artwork.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          artwork.artist.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          artwork.category.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-
-    // Filter by category
-    if (selectedCategory !== "All") {
-      filtered = filtered.filter((artwork) => artwork.category === selectedCategory);
-    }
-
-    // Sort artworks
-    switch (sortBy) {
-      case "price-low":
-        filtered.sort((a, b) => parseInt(a.price.slice(1)) - parseInt(b.price.slice(1)));
-        break;
-      case "price-high":
-        filtered.sort((a, b) => parseInt(b.price.slice(1)) - parseInt(a.price.slice(1)));
-        break;
-      case "newest":
-        filtered.reverse();
-        break;
-      default:
-        // Keep featured order
-        break;
-    }
-
-    setFilteredArtworks(filtered);
-  }, [searchQuery, selectedCategory, sortBy]);
+    fetchArtworks();
+  }, [fetchArtworks]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -231,28 +223,50 @@ export default function Browse() {
               ))}
             </div>
           </div>
-        </div>
-
-        {/* Results Count */}
+        </div>        {/* Results Count */}
         <div className="mb-6">
-          <p className="text-gray-600">
-            Showing {filteredArtworks.length} result{filteredArtworks.length !== 1 ? 's' : ''}
-            {searchQuery && ` for "${searchQuery}"`}
-            {selectedCategory !== "All" && ` in ${selectedCategory}`}
-          </p>
+          {loading ? (
+            <p className="text-gray-600">Loading artworks...</p>
+          ) : error ? (
+            <p className="text-red-600">Error: {error}</p>
+          ) : (
+            <p className="text-gray-600">
+              Showing {artworks.length} of {pagination.total} result{pagination.total !== 1 ? 's' : ''}
+              {searchQuery && ` for "${searchQuery}"`}
+              {selectedCategory !== "All" && ` in ${selectedCategory}`}
+            </p>
+          )}
         </div>
 
         {/* Artwork Grid */}
-        {filteredArtworks.length > 0 ? (
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="text-gray-400 text-6xl mb-4">⏳</div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Loading...</h3>
+            <p className="text-gray-600">Fetching artworks for you...</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <div className="text-red-400 text-6xl mb-4">❌</div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Error Loading Artworks</h3>
+            <p className="text-gray-600 mb-4">{error}</p>
+            <button
+              onClick={fetchArtworks}
+              className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700"
+            >
+              Try Again
+            </button>
+          </div>
+        ) : artworks.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredArtworks.map((artwork) => (
+            {artworks.map((artwork) => (
               <div
                 key={artwork.id}
                 className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow overflow-hidden border border-gray-200"
               >
                 <div className="aspect-square bg-gray-200 relative">
                   <Image
-                    src={artwork.image}
+                    src={artwork.files[0]?.url || "/images/placeholder.jpg"}
                     alt={artwork.title}
                     fill
                     className="object-cover"
@@ -264,11 +278,11 @@ export default function Browse() {
                       {artwork.title}
                     </h3>
                     <span className="text-green-600 font-bold text-lg">
-                      {artwork.price}
+                      ${artwork.price}
                     </span>
                   </div>
                   <p className="text-gray-600 text-sm mb-1">
-                    by {artwork.artist}
+                    by {artwork.user.firstName} {artwork.user.lastName}
                   </p>
                   <p className="text-gray-500 text-xs mb-2">
                     {artwork.category}

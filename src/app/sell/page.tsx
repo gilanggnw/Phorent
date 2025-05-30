@@ -93,17 +93,61 @@ export default function Sell() {
     const newFiles = formData.files.filter((_, i) => i !== index);
     setFormData({ ...formData, files: newFiles });
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      console.log("Artwork submitted:", formData);
+    try {
+      // Prepare form data for submission
+      const submitFormData = new FormData();
+      
+      // Add artwork data as JSON
+      const artworkData = {
+        title: formData.title,
+        description: formData.description,
+        category: formData.category,
+        price: parseFloat(formData.price),
+        tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
+        medium: formData.medium,
+        dimensions: formData.dimensions,
+        isDigital: formData.isDigital,
+        isCommission: formData.isCommission,
+      };
+      
+      submitFormData.append('artworkData', JSON.stringify(artworkData));
+      
+      // Add files
+      formData.files.forEach((file) => {
+        submitFormData.append('files', file);
+      });
+
+      // Get token from localStorage (you'll need to implement auth context)
+      const token = localStorage.getItem('token');
+      
+      const response = await fetch('/api/artworks', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: submitFormData,
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        // Success - redirect to artwork page or show success message
+        alert('Artwork uploaded successfully!');
+        // You could redirect to the artwork page or reset the form
+        window.location.href = `/artwork/${result.artwork.id}`;
+      } else {
+        alert(result.error || 'Failed to upload artwork');
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      alert('Failed to upload artwork. Please try again.');
+    } finally {
       setIsLoading(false);
-      // Here you would typically upload the files and save the artwork data
-    }, 2000);
+    }
   };
 
   const nextStep = () => {
@@ -249,11 +293,12 @@ export default function Sell() {
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {formData.files.map((file, index) => (
                       <div key={index} className="relative group">
-                        <div className="aspect-square bg-gray-200 rounded-lg overflow-hidden">
-                          {file.type.startsWith("image/") ? (
-                            <img
+                        <div className="aspect-square bg-gray-200 rounded-lg overflow-hidden">                          {file.type.startsWith("image/") ? (
+                            <Image
                               src={URL.createObjectURL(file)}
                               alt={file.name}
+                              width={200}
+                              height={200}
                               className="w-full h-full object-cover"
                             />
                           ) : (

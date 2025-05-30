@@ -51,7 +51,6 @@ export default function SignUp() {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -59,13 +58,35 @@ export default function SignUp() {
     
     setIsLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      console.log("Sign up attempted with:", formData);
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        // Success - redirect to sign in page
+        alert('Account created successfully! Please sign in.');
+        window.location.href = '/signin';
+      } else {
+        setErrors({ general: result.error || 'Failed to create account' });
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      setErrors({ general: 'Failed to create account. Please try again.' });
+    } finally {
       setIsLoading(false);
-      // Here you would typically handle the registration
-      // For now, we'll just log the attempt
-    }, 1500);
+    }
   };
 
   return (
