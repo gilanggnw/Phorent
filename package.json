@@ -1,15 +1,18 @@
 {
   "name": "phorent",
   "version": "0.1.0",
-  "private": true,  "scripts": {
+  "private": true,
+  "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "prisma generate",    "db:push": "prisma db push",
+    "postinstall": "prisma generate",
+    "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
     "db:seed": "node scripts/seed.js",
-    "db:studio": "prisma studio",    "db:setup": "prisma generate && prisma db push && npm run db:seed",
+    "db:studio": "prisma studio",
+    "db:setup": "prisma generate && prisma db push && npm run db:seed",
     "db:reset": "prisma db push --force-reset",
     "setup": "powershell -ExecutionPolicy Bypass -File scripts/setup-database.ps1"
   },
@@ -24,6 +27,7 @@
     "multer": "^2.0.0",
     "next": "15.3.2",
     "next-auth": "^4.24.11",
+    "pg": "^8.16.0",
     "prisma": "^6.8.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
