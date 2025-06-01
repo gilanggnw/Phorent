@@ -39,3 +39,21 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# test files and temporary files
+test-*.js
+test-*.ts
+*-test.js
+*-test.ts
+*.tmp
+*.temp
+
+# local database files
+*.db
+*.sqlite
+prisma/dev.db
+
+# deployment docs (keep main DEPLOYMENT.md)
+DEPLOYMENT_READY.md
+READY_TO_DEPLOY.md
+*_READY.md
