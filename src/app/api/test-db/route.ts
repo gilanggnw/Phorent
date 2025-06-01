@@ -1,13 +1,18 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { createClient } from '@supabase/supabase-js';
+
+interface TestResult {
+  status: 'PASS' | 'FAIL';
+  details: Record<string, unknown>;
+}
 
 export async function GET() {
   const prisma = new PrismaClient();
   
   const testResults = {
     timestamp: new Date().toISOString(),
-    tests: {} as Record<string, any>,
+    tests: {} as Record<string, TestResult>,
     summary: ''
   };
 
