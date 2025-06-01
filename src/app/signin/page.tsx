@@ -7,46 +7,25 @@ import Image from "next/image";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function SignIn() {  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [password, setPassword] = useState("");  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [useSupabase, setUseSupabase] = useState(true); // Default to Supabase
 
-  const { login, signInWithEmail } = useAuth();
+  const { signInWithEmail } = useAuth();
   const router = useRouter();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
 
     try {
-      if (useSupabase) {
-        // Use Supabase authentication
-        const result = await signInWithEmail(email, password);
-        
-        if (result.error) {
-          setError(result.error);
-        } else {
-          router.push("/");
-        }
+      // Use Supabase authentication
+      const result = await signInWithEmail(email, password);
+      
+      if (result.error) {
+        setError(result.error);
       } else {
-        // Use legacy API authentication
-        const response = await fetch("/api/auth/login", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email, password, useSupabase: false }),
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-          login(data.token, data.user);
-          router.push("/");
-        } else {
-          setError(data.error || "Login failed");
-        }
+        router.push("/");
       }
     } catch (error) {
       setError("An error occurred. Please try again.");
@@ -128,25 +107,7 @@ export default function SignIn() {  const [email, setEmail] = useState("");
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 text-gray-900 bg-white"
                 />
               </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="use-supabase"
-                  name="use-supabase"
-                  type="checkbox"
-                  checked={useSupabase}
-                  onChange={(e) => setUseSupabase(e.target.checked)}
-                  className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                />
-                <label htmlFor="use-supabase" className="ml-2 block text-sm text-gray-900">
-                  Use Supabase Authentication
-                </label>
-              </div>
-            </div>
-
-            <div>
+            </div>            <div>
               <button
                 type="submit"
                 disabled={isLoading}

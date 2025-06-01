@@ -17,10 +17,8 @@ export default function SignUp() {
     agreeToTerms: false,
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);  const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [useSupabase, setUseSupabase] = useState(true); // Default to Supabase
 
   const { signUpWithEmail } = useAuth();
   const router = useRouter();
@@ -64,43 +62,17 @@ export default function SignUp() {
     setIsLoading(true);
     
     try {
-      if (useSupabase) {
-        // Use Supabase authentication
-        const result = await signUpWithEmail(formData.email, formData.password, {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-        });
-        
-        if (result.error) {
-          setErrors({ general: result.error });
-        } else {
-          alert('Account created successfully! Please check your email to verify your account.');
-          router.push('/signin');
-        }
+      // Use Supabase authentication
+      const result = await signUpWithEmail(formData.email, formData.password, {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+      });
+      
+      if (result.error) {
+        setErrors({ general: result.error });
       } else {
-        // Use legacy API authentication
-        const response = await fetch('/api/auth/register', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            email: formData.email,
-            password: formData.password,
-            firstName: formData.firstName,
-            lastName: formData.lastName,
-            useSupabase: false,
-          }),
-        });
-
-        const result = await response.json();
-
-        if (response.ok) {
-          alert('Account created successfully! Please sign in.');
-          router.push('/signin');
-        } else {
-          setErrors({ general: result.error || 'Failed to create account' });
-        }
+        alert('Account created successfully! Please check your email to verify your account.');
+        router.push('/signin');
       }
     } catch (error) {
       console.error('Registration error:', error);
@@ -345,23 +317,6 @@ export default function SignUp() {
                   </Link>
                 </label>
               </div>              {errors.agreeToTerms && <p className="mt-1 text-sm text-red-600">{errors.agreeToTerms}</p>}
-            </div>
-
-            {/* Authentication Method */}
-            <div>
-              <div className="flex items-center">
-                <input
-                  id="use-supabase"
-                  name="use-supabase"
-                  type="checkbox"
-                  checked={useSupabase}
-                  onChange={(e) => setUseSupabase(e.target.checked)}
-                  className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                />
-                <label htmlFor="use-supabase" className="ml-2 block text-sm text-gray-900">
-                  Use Supabase Authentication
-                </label>
-              </div>
             </div>
 
             <div>

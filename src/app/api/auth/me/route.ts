@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { getTokenFromRequest, verifyJWT } from '@/lib/auth'
 import { createClient } from '@/utils/supabase/server'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
+import { getTokenFromRequest, verifyJWT } from '@/lib/auth'
+
+// Initialize Supabase admin client for database operations
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+const supabaseAdmin = createSupabaseClient(supabaseUrl, supabaseServiceKey)
 
 export async function GET(request: NextRequest) {
   try {
@@ -46,20 +51,14 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        avatar: true,
-        bio: true,
-        createdAt: true,
-      }
-    })
+    // Get user from our database using Supabase
+    const { data: user, error } = await supabaseAdmin
+      .from('users')
+      .select('id, email, firstName, lastName, avatar, bio, createdAt')
+      .eq('id', userId)
+      .single()
 
-    if (!user) {
+    if (error || !user) {
       return NextResponse.json(
         { error: 'User not found' },
         { status: 404 }

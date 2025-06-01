@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { createClient } from '@supabase/supabase-js'
 import { uploadToCloudinary } from '@/lib/cloudinary'
 import { getTokenFromRequest, verifyJWT } from '@/lib/auth'
 import { z } from 'zod'
-import { Prisma } from '@prisma/client'
+
+// Initialize Supabase client
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 const artworkSchema = z.object({
   title: z.string().min(1),
@@ -11,10 +15,6 @@ const artworkSchema = z.object({
   category: z.string().min(1),
   price: z.number().positive(),
   tags: z.array(z.string()).optional(),
-  medium: z.string().optional(),
-  dimensions: z.string().optional(),
-  isDigital: z.boolean().default(false),
-  isCommission: z.boolean().default(false),
 })
 
 export async function POST(request: NextRequest) {
@@ -42,67 +42,75 @@ export async function POST(request: NextRequest) {
     const files = formData.getAll('files') as File[]
 
     // Validate artwork data
-    const validatedData = artworkSchema.parse(artworkData)
-
-    // Upload files to Cloudinary
+    const validatedData = artworkSchema.parse(artworkData)    // Upload files to Cloudinary
     const uploadPromises = files.map(async (file, index) => {
       const buffer = Buffer.from(await file.arrayBuffer())
-      const { url, publicId } = await uploadToCloudinary(buffer, 'phorent/artworks')
+      const { url } = await uploadToCloudinary(buffer, 'phorent/artworks')
       return {
-        filename: file.name,
-        url,
-        publicId,
-        type: file.type.startsWith('image/') ? 'image' : 'video',
-        size: file.size,
+        fileName: file.name,
+        fileUrl: url,
+        fileType: file.type.startsWith('image/') ? 'image' : 'video',
+        fileSize: file.size,
         order: index,
       }
     })
 
     const uploadedFiles = await Promise.all(uploadPromises)
 
-    // Create artwork in database
-    const artwork = await prisma.artwork.create({
-      data: {
+    // Use the first uploaded image as the main imageUrl
+    const mainImageUrl = uploadedFiles.length > 0 ? uploadedFiles[0].fileUrl : ''
+
+    // Create artwork in database using Supabase
+    const { data: artwork, error: artworkError } = await supabase
+      .from('artworks')
+      .insert({
         title: validatedData.title,
         description: validatedData.description,
         category: validatedData.category,
         price: validatedData.price,
         tags: validatedData.tags || [],
-        medium: validatedData.medium || null,
-        dimensions: validatedData.dimensions || null,
-        isDigital: validatedData.isDigital,
-        isCommission: validatedData.isCommission,
         userId: decoded.userId,
-      }
-    })
-
-    // Create files separately
-    for (const fileData of uploadedFiles) {
-      await prisma.artworkFile.create({
-        data: {
-          ...fileData,
-          artworkId: artwork.id,
-        }
+        imageUrl: mainImageUrl,
+        status: 'active',
       })
+      .select()
+      .single()
+
+    if (artworkError) {
+      console.error('Artwork creation error:', artworkError)
+      return NextResponse.json(
+        { error: 'Failed to create artwork' },
+        { status: 500 }
+      )
+    }    // Create files separately
+    if (uploadedFiles.length > 0) {
+      await supabase
+        .from('artwork_files')
+        .insert(
+          uploadedFiles.map(fileData => ({
+            artworkId: artwork.id,
+            fileName: fileData.fileName,
+            fileUrl: fileData.fileUrl,
+            fileType: fileData.fileType,
+            fileSize: fileData.fileSize,
+          }))
+        )
     }
 
-    // Fetch the complete artwork with relations
-    const completeArtwork = await prisma.artwork.findUnique({
-      where: { id: artwork.id },
-      include: {
-        files: {
-          orderBy: { order: 'asc' }
-        },
-        user: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            avatar: true,
-          }
-        }
-      }
-    })
+    // Fetch the complete artwork with user info
+    const { data: completeArtwork } = await supabase
+      .from('artworks')
+      .select(`
+        *,
+        users:userId (
+          id,
+          firstName,
+          lastName,
+          avatar
+        )
+      `)
+      .eq('id', artwork.id)
+      .single()
 
     return NextResponse.json({ 
       success: true, 
@@ -128,79 +136,90 @@ export async function GET(request: NextRequest) {
     const sortBy = searchParams.get('sortBy') || 'featured'
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '12')
-    const skip = (page - 1) * limit
+    const offset = (page - 1) * limit
 
-    const where: Prisma.ArtworkWhereInput = {
-      status: 'ACTIVE'
-    }
+    // Build query
+    let query = supabase
+      .from('artworks')
+      .select(`
+        *,
+        users:userId (
+          id,
+          firstName,
+          lastName,
+          avatar
+        ),
+        artwork_files (
+          id,
+          fileName,
+          fileUrl,
+          fileType
+        )
+      `)
+      .eq('status', 'active')
 
+    // Apply filters
     if (category && category !== 'all') {
-      where.category = category
+      query = query.eq('category', category)
     }
 
     if (search) {
-      where.OR = [
-        { title: { contains: search } },
-        { description: { contains: search } }
-      ]
+      query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%`)
     }
 
-    // Handle sorting
-    let orderBy: Prisma.ArtworkOrderByWithRelationInput = { createdAt: 'desc' }
-    
+    // Apply sorting
     switch (sortBy) {
       case 'price-low':
-        orderBy = { price: 'asc' }
+        query = query.order('price', { ascending: true })
         break
       case 'price-high':
-        orderBy = { price: 'desc' }
+        query = query.order('price', { ascending: false })
         break
       case 'newest':
-        orderBy = { createdAt: 'desc' }
+        query = query.order('createdAt', { ascending: false })
         break
       case 'featured':
       default:
-        orderBy = { createdAt: 'desc' } // Default to newest for now
+        query = query.order('createdAt', { ascending: false })
         break
     }
 
-    const [artworks, total] = await Promise.all([
-      prisma.artwork.findMany({
-        where,
-        include: {
-          files: {
-            orderBy: { order: 'asc' },
-            take: 1 // Just get the first image for listing
-          },
-          user: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              avatar: true,
-            }
-          },
-          _count: {
-            select: {
-              favorites: true,
-              reviews: true
-            }
-          }
-        },
-        orderBy,
-        skip,
-        take: limit,
-      }),
-      prisma.artwork.count({ where })
-    ])
+    // Apply pagination
+    query = query.range(offset, offset + limit - 1)
+
+    const { data: artworks, error } = await query
+
+    if (error) {
+      console.error('Get artworks error:', error)
+      return NextResponse.json(
+        { error: 'Failed to fetch artworks' },
+        { status: 500 }
+      )
+    }
+
+    // Get total count for pagination
+    let countQuery = supabase
+      .from('artworks')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'active')
+
+    if (category && category !== 'all') {
+      countQuery = countQuery.eq('category', category)
+    }
+
+    if (search) {
+      countQuery = countQuery.or(`title.ilike.%${search}%,description.ilike.%${search}%`)
+    }
+
+    const { count: total } = await countQuery
 
     return NextResponse.json({
       artworks,
       pagination: {
         page,
         limit,
-        total,
-        pages: Math.ceil(total / limit)
+        total: total || 0,
+        pages: Math.ceil((total || 0) / limit)
       }
     })
 

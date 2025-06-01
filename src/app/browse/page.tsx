@@ -10,33 +10,24 @@ interface Artwork {
   description: string;
   category: string;
   price: number;
-  tags: string;
-  medium?: string;
-  dimensions?: string;
-  isDigital: boolean;
-  isCommission: boolean;
+  tags: string[];
+  imageUrl?: string;
   status: string;
   createdAt: string;
   updatedAt: string;
   userId: string;
-  user: {
+  users: {
     id: string;
     firstName: string;
     lastName: string;
     avatar?: string;
   };
-  files: Array<{
+  artwork_files: Array<{
     id: string;
-    filename: string;
-    url: string;
-    type: string;
-    size: number;
-    order: number;
+    fileName: string;
+    fileUrl: string;
+    fileType: string;
   }>;
-  _count: {
-    favorites: number;
-    reviews: number;
-  };
 }
 
 interface PaginationInfo {
@@ -261,10 +252,9 @@ export default function Browse() {
               <div
                 key={artwork.id}
                 className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow overflow-hidden border border-gray-200"
-              >
-                <div className="aspect-square bg-gray-200 relative">
+              >                <div className="aspect-square bg-gray-200 relative">
                   <Image
-                    src={artwork.files[0]?.url || "/images/placeholder.jpg"}
+                    src={artwork.artwork_files?.[0]?.fileUrl || artwork.imageUrl || "/images/placeholder.jpg"}
                     alt={artwork.title}
                     fill
                     className="object-cover"
@@ -278,9 +268,8 @@ export default function Browse() {
                     <span className="text-green-600 font-bold text-lg">
                       ${artwork.price}
                     </span>
-                  </div>
-                  <p className="text-gray-600 text-sm mb-1">
-                    by {artwork.user.firstName} {artwork.user.lastName}
+                  </div>                  <p className="text-gray-600 text-sm mb-1">
+                    by {artwork.users.firstName} {artwork.users.lastName}
                   </p>
                   <p className="text-gray-500 text-xs mb-2">
                     {artwork.category}

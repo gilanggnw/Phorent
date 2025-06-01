@@ -1,100 +1,59 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { verifyPassword, signJWT } from '@/lib/auth'
 import { createClient } from '@/utils/supabase/server'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { z } from 'zod'
+
+// Initialize Supabase admin client for database operations
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+const supabaseAdmin = createSupabaseClient(supabaseUrl, supabaseServiceKey)
 
 const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1),
-  useSupabase: z.boolean().optional().default(false),
 })
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { email, password, useSupabase } = loginSchema.parse(body)
+    const { email, password } = loginSchema.parse(body)
 
-    // If using Supabase authentication
-    if (useSupabase) {
-      const supabase = await createClient()
-      
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-
-      if (error) {
-        return NextResponse.json(
-          { error: 'Invalid credentials' },
-          { status: 401 }
-        )
-      }
-
-      // Try to find or create user in your database
-      let user = await prisma.user.findUnique({
-        where: { email }
-      })
-
-      if (!user && data.user) {
-        // Create user in your database if it doesn't exist
-        user = await prisma.user.create({
-          data: {
-            id: data.user.id,
-            email: data.user.email!,
-            firstName: data.user.user_metadata?.firstName || '',
-            lastName: data.user.user_metadata?.lastName || '',
-            password: '', // Empty since using Supabase auth
-            avatar: data.user.user_metadata?.avatar_url,
-            bio: data.user.user_metadata?.bio,
-          }
-        })
-      }
-
-      if (user) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { password: _password, ...userWithoutPassword } = user
-        return NextResponse.json({
-          user: userWithoutPassword,
-          token: data.session?.access_token,
-          supabaseSession: data.session,
-        })
-      }
-    }
-
-    // Fallback to existing authentication system
-    // Find user by email
-    const user = await prisma.user.findUnique({
-      where: { email }
+    // Use Supabase authentication
+    const supabase = await createClient()
+    
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
     })
 
-    if (!user) {
+    if (error) {
       return NextResponse.json(
         { error: 'Invalid credentials' },
         { status: 401 }
       )
     }
 
-    // Verify password
-    const isValidPassword = await verifyPassword(password, user.password)
-    if (!isValidPassword) {
+    // Get user data from our users table
+    const { data: user, error: userError } = await supabaseAdmin
+      .from('users')
+      .select('id, email, firstName, lastName, avatar, bio, createdAt, updatedAt')
+      .eq('email', email)
+      .single()
+
+    if (userError || !user) {
+      console.error('User lookup error:', userError)
       return NextResponse.json(
-        { error: 'Invalid credentials' },
-        { status: 401 }
+        { error: 'User data not found' },
+        { status: 404 }
       )
     }
-
-    // Generate JWT token
-    const token = signJWT({ userId: user.id, email: user.email })
-    
-    // Return user data without password
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password: _password, ...userWithoutPassword } = user
 
     return NextResponse.json({
-      user: userWithoutPassword,
-      token,
+      user,
+      token: data.session?.access_token,
+      supabaseSession: data.session,
     })
+
   } catch (error) {
     console.error('Login error:', error)
     return NextResponse.json(
