@@ -1,13 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Header from "@/components/Header";
 
 export default function Home() {
-  const [searchQuery, setSearchQuery] = useState("");
-
   const featuredArtworks = [
     {
       id: 1,
@@ -60,24 +57,19 @@ export default function Home() {
           <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
             The Art{" "}
             <span className="text-green-600">Marketplace</span>
-          </h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+          </h1>          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
             Buy, sell, and discover unique artwork, design services, and digital
             creations. From drafting data to custom art commissions.
           </p>
-
-          {/* Search Bar */}
-          <div className="max-w-2xl mx-auto relative">
-            <input
-              type="text"
-              placeholder="Search for artwork, designs, or artists..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-6 py-4 text-lg border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 bg-white"
-            />
-            <button className="absolute right-2 top-2 bg-green-600 text-white px-6 py-2 rounded-full hover:bg-green-700">
-              Search
-            </button>
+          
+          {/* Browse Now Button */}
+          <div className="max-w-2xl mx-auto">
+            <Link 
+              href="/browse"
+              className="inline-block bg-green-600 text-white px-12 py-4 text-lg font-semibold rounded-full hover:bg-green-700 transition-colors shadow-lg hover:shadow-xl"
+            >
+              Browse Now
+            </Link>
           </div>
         </div>
       </section>
@@ -87,12 +79,12 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
             Browse Categories
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          </h2>          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {categories.map((category, index) => (
-              <div
+              <Link
                 key={index}
-                className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow cursor-pointer"
+                href={`/browse?category=${encodeURIComponent(category.name)}`}
+                className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow cursor-pointer block"
               >
                 <div
                   className={`w-12 h-12 ${category.color} rounded-lg mb-4`}
@@ -101,7 +93,7 @@ export default function Home() {
                   {category.name}
                 </h3>
                 <p className="text-gray-600">{category.count} items</p>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
