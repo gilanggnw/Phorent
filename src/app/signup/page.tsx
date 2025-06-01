@@ -191,15 +191,14 @@ export default function SignUp() {
                 <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
                   First name
                 </label>
-                <div className="mt-1">
-                  <input
+                <div className="mt-1">                  <input
                     id="firstName"
                     name="firstName"
                     type="text"
                     required
                     value={formData.firstName}
                     onChange={handleChange}
-                    className={`appearance-none block w-full px-3 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm ${
+                    className={`appearance-none block w-full px-3 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm text-gray-900 bg-white ${
                       errors.firstName ? "border-red-300" : "border-gray-300"
                     }`}
                     placeholder="John"
@@ -211,15 +210,14 @@ export default function SignUp() {
                 <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
                   Last name
                 </label>
-                <div className="mt-1">
-                  <input
+                <div className="mt-1">                  <input
                     id="lastName"
                     name="lastName"
                     type="text"
                     required
                     value={formData.lastName}
                     onChange={handleChange}
-                    className={`appearance-none block w-full px-3 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm ${
+                    className={`appearance-none block w-full px-3 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm text-gray-900 bg-white ${
                       errors.lastName ? "border-red-300" : "border-gray-300"
                     }`}
                     placeholder="Doe"
@@ -234,8 +232,7 @@ export default function SignUp() {
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email address
               </label>
-              <div className="mt-1">
-                <input
+              <div className="mt-1">                <input
                   id="email"
                   name="email"
                   type="email"
@@ -243,7 +240,7 @@ export default function SignUp() {
                   required
                   value={formData.email}
                   onChange={handleChange}
-                  className={`appearance-none block w-full px-3 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm ${
+                  className={`appearance-none block w-full px-3 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm text-gray-900 bg-white ${
                     errors.email ? "border-red-300" : "border-gray-300"
                   }`}
                   placeholder="john@example.com"
@@ -257,15 +254,14 @@ export default function SignUp() {
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Password
               </label>
-              <div className="mt-1 relative">
-                <input
+              <div className="mt-1 relative">                <input
                   id="password"
                   name="password"
                   type={showPassword ? "text" : "password"}
                   required
                   value={formData.password}
                   onChange={handleChange}
-                  className={`appearance-none block w-full px-3 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm pr-10 ${
+                  className={`appearance-none block w-full px-3 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm pr-10 text-gray-900 bg-white ${
                     errors.password ? "border-red-300" : "border-gray-300"
                   }`}
                   placeholder="At least 8 characters"
@@ -295,15 +291,14 @@ export default function SignUp() {
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
                 Confirm password
               </label>
-              <div className="mt-1 relative">
-                <input
+              <div className="mt-1 relative">                <input
                   id="confirmPassword"
                   name="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
                   required
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className={`appearance-none block w-full px-3 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm pr-10 ${
+                  className={`appearance-none block w-full px-3 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm pr-10 text-gray-900 bg-white ${
                     errors.confirmPassword ? "border-red-300" : "border-gray-300"
                   }`}
                   placeholder="Confirm your password"

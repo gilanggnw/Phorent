@@ -79,3 +79,36 @@ html {
 .btn-secondary {
   @apply border border-gray-300 text-gray-700 px-6 py-3 rounded-md font-medium transition-all duration-200 hover:border-gray-400 hover:bg-gray-50;
 }
+
+/* Fix input text visibility issues */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+textarea,
+select {
+  color: #374151 !important; /* Force dark gray text */
+  background-color: #ffffff !important; /* Force white background */
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="search"]:focus,
+textarea:focus,
+select:focus {
+  color: #111827 !important; /* Even darker text on focus */
+}
+
+/* Dark mode input overrides */
+@media (prefers-color-scheme: dark) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  textarea,
+  select {
+    color: #111827 !important; /* Dark text */
+    background-color: #ffffff !important; /* White background */
+  }
+}

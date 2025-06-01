@@ -173,14 +173,13 @@ export default function Browse() {
             <div className="md:col-span-2">
               <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
                 Search
-              </label>
-              <input
+              </label>              <input
                 type="text"
                 id="search"
                 placeholder="Search for artwork, artists, or categories..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 bg-white"
               />
             </div>
 
@@ -188,12 +187,11 @@ export default function Browse() {
             <div>
               <label htmlFor="sort" className="block text-sm font-medium text-gray-700 mb-2">
                 Sort By
-              </label>
-              <select
+              </label>              <select
                 id="sort"
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 bg-white"
               >
                 {sortOptions.map((option) => (
                   <option key={option.value} value={option.value}>

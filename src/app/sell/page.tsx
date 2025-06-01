@@ -331,15 +331,14 @@ export default function Sell() {
               <div>
                 <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
                   Title *
-                </label>
-                <input
+                </label>                <input
                   type="text"
                   id="title"
                   name="title"
                   required
                   value={formData.title}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 bg-white"
                   placeholder="Enter artwork title"
                 />
               </div>
@@ -347,15 +346,14 @@ export default function Sell() {
               <div>
                 <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
                   Description *
-                </label>
-                <textarea
+                </label>                <textarea
                   id="description"
                   name="description"
                   required
                   rows={4}
                   value={formData.description}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 bg-white"
                   placeholder="Describe your artwork, inspiration, and techniques used"
                 />
               </div>
@@ -364,14 +362,13 @@ export default function Sell() {
                 <div>
                   <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
                     Category *
-                  </label>
-                  <select
+                  </label>                  <select
                     id="category"
                     name="category"
                     required
                     value={formData.category}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 bg-white"
                   >
                     <option value="">Select a category</option>
                     {categories.map((cat) => (
@@ -383,14 +380,13 @@ export default function Sell() {
                 <div>
                   <label htmlFor="medium" className="block text-sm font-medium text-gray-700 mb-2">
                     Medium
-                  </label>
-                  <input
+                  </label>                  <input
                     type="text"
                     id="medium"
                     name="medium"
                     value={formData.medium}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 bg-white"
                     placeholder="e.g., Oil on canvas, Digital, Watercolor"
                   />
                 </div>
@@ -399,14 +395,13 @@ export default function Sell() {
               <div>
                 <label htmlFor="dimensions" className="block text-sm font-medium text-gray-700 mb-2">
                   Dimensions
-                </label>
-                <input
+                </label>                <input
                   type="text"
                   id="dimensions"
                   name="dimensions"
                   value={formData.dimensions}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 bg-white"
                   placeholder="e.g., 24x36 inches, 1920x1080 pixels"
                 />
               </div>
@@ -414,14 +409,13 @@ export default function Sell() {
               <div>
                 <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-2">
                   Tags
-                </label>
-                <input
+                </label>                <input
                   type="text"
                   id="tags"
                   name="tags"
                   value={formData.tags}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 bg-white"
                   placeholder="Separate tags with commas (e.g., abstract, modern, colorful)"
                 />
               </div>
@@ -470,8 +464,7 @@ export default function Sell() {
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <span className="text-gray-500 sm:text-sm">$</span>
-                  </div>
-                  <input
+                  </div>                  <input
                     type="number"
                     id="price"
                     name="price"
@@ -480,7 +473,7 @@ export default function Sell() {
                     step="0.01"
                     value={formData.price}
                     onChange={handleChange}
-                    className="w-full pl-7 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full pl-7 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 bg-white"
                     placeholder="0.00"
                   />
                 </div>

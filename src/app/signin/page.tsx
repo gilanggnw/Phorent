@@ -97,8 +97,7 @@ export default function SignIn() {  const [email, setEmail] = useState("");
               >
                 Email address
               </label>
-              <div className="mt-1">
-                <input
+              <div className="mt-1">                <input
                   id="email"
                   name="email"
                   type="email"
@@ -106,7 +105,7 @@ export default function SignIn() {  const [email, setEmail] = useState("");
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500"
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 text-gray-900 bg-white"
                 />
               </div>
             </div>
@@ -118,8 +117,7 @@ export default function SignIn() {  const [email, setEmail] = useState("");
               >
                 Password
               </label>
-              <div className="mt-1">
-                <input
+              <div className="mt-1">                <input
                   id="password"
                   name="password"
                   type="password"
@@ -127,7 +125,8 @@ export default function SignIn() {  const [email, setEmail] = useState("");
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500"                />
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 text-gray-900 bg-white"
+                />
               </div>
             </div>
 
