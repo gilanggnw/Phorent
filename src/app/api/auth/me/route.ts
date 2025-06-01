@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getTokenFromRequest, verifyJWT } from '@/lib/auth'
+import { createClient } from '@/utils/supabase/server'
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,8 +13,33 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const decoded = verifyJWT(token)
-    if (!decoded) {
+    let userId: string | null = null
+
+    // First try to verify as Supabase token
+    try {
+      const supabase = await createClient()
+      const { data: { user: supabaseUser }, error } = await supabase.auth.getUser(token)
+      
+      if (!error && supabaseUser) {
+        userId = supabaseUser.id
+      }
+    } catch {
+      // If Supabase token verification fails, try JWT
+    }
+
+    // If not a Supabase token, try as JWT
+    if (!userId) {
+      const decoded = verifyJWT(token)
+      if (!decoded) {
+        return NextResponse.json(
+          { error: 'Invalid token' },
+          { status: 401 }
+        )
+      }
+      userId = decoded.userId
+    }
+
+    if (!userId) {
       return NextResponse.json(
         { error: 'Invalid token' },
         { status: 401 }
@@ -21,7 +47,7 @@ export async function GET(request: NextRequest) {
     }
 
     const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
+      where: { id: userId },
       select: {
         id: true,
         email: true,

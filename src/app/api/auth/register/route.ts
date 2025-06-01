@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { hashPassword, signJWT } from '@/lib/auth'
+import { createClient } from '@/utils/supabase/server'
 import { z } from 'zod'
 
 const registerSchema = z.object({
@@ -8,12 +9,13 @@ const registerSchema = z.object({
   password: z.string().min(6),
   firstName: z.string().min(1),
   lastName: z.string().min(1),
+  useSupabase: z.boolean().optional().default(false),
 })
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { email, password, firstName, lastName } = registerSchema.parse(body)
+    const { email, password, firstName, lastName, useSupabase } = registerSchema.parse(body)
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
@@ -27,6 +29,58 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // If using Supabase authentication
+    if (useSupabase) {
+      const supabase = await createClient()
+      
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            firstName,
+            lastName,
+            full_name: `${firstName} ${lastName}`,
+          }
+        }
+      })
+
+      if (error) {
+        return NextResponse.json(
+          { error: error.message },
+          { status: 400 }
+        )
+      }
+
+      // Create user in your database
+      if (data.user) {
+        const user = await prisma.user.create({
+          data: {
+            id: data.user.id,
+            email: data.user.email!,
+            firstName,
+            lastName,
+            password: '', // Empty since using Supabase auth
+          },
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            createdAt: true,
+          }
+        })
+
+        return NextResponse.json({
+          user,
+          token: data.session?.access_token,
+          supabaseSession: data.session,
+          message: 'Registration successful. Please check your email to verify your account.',
+        })
+      }
+    }
+
+    // Fallback to existing authentication system
     // Hash password and create user
     const hashedPassword = await hashPassword(password)
     const user = await prisma.user.create({
