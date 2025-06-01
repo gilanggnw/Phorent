@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import Header from "@/components/Header";
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -48,58 +49,10 @@ export default function Home() {
     { name: "Drafting Data", count: "950+", color: "bg-green-500" },
     { name: "Traditional Art", count: "3.2k+", color: "bg-red-500" },
   ];
-
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
-      <nav className="border-b border-gray-200 bg-white sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
-              <Link href="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
-                <Image
-                  src="/images/logos/logo_notext_whitebg.png"
-                  alt="PhoRent Logo"
-                  width={40}
-                  height={40}
-                  className="object-contain"
-                />
-                <h1 className="text-2xl font-bold text-black">PhoRent</h1>
-              </Link>
-            </div>
-
-            <div className="hidden md:flex items-center space-x-8">
-              <Link
-                href="/browse"
-                className="text-gray-900 hover:text-gray-600"
-              >
-                Browse
-              </Link>
-              <Link
-                href="/sell"
-                className="text-gray-900 hover:text-gray-600"
-              >
-                Sell
-              </Link>
-              <Link
-                href="/about"
-                className="text-gray-900 hover:text-gray-600"
-              >
-                About
-              </Link>
-            </div>
-
-            <div className="flex items-center space-x-4">
-              <Link href="/signin" className="text-gray-900 hover:text-gray-600">
-                Sign In
-              </Link>
-              <Link href="/signup" className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800">
-                Sign Up
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Header />
 
       {/* Hero Section */}
       <section className="bg-gray-50 py-16">
