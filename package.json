@@ -11,6 +11,7 @@
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
     "db:seed": "node scripts/seed.js",
+    "db:seed-auth": "npx tsx scripts/seed-with-auth.ts",
     "db:studio": "prisma studio",
     "db:setup": "prisma generate && prisma db push && npm run db:seed",
     "db:reset": "prisma db push --force-reset",
@@ -47,6 +48,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.3.2",
     "tailwindcss": "^4",
+    "tsx": "^4.19.4",
     "typescript": "^5"
   }
 }
