@@ -1,7 +1,9 @@
 Environment Variables to Add in Vercel Dashboard:
 
-=== CRITICAL - Database & Supabase ===
-DATABASE_URL = postgresql://postgres.ljlypwsaskcjgxolvplc:PhoRentOnly@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require
+=== CRITICAL - Database & JWT ===
+DATABASE_URL = postgres://postgres.ljlypwsaskcjgxolvplc:sElIgtjsEEPfLMka@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require
+
+DIRECT_URL = postgres://postgres.ljlypwsaskcjgxolvplc:sElIgtjsEEPfLMka@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require
 
 NEXT_PUBLIC_SUPABASE_URL = https://ljlypwsaskcjgxolvplc.supabase.co
 
