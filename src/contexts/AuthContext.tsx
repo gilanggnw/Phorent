@@ -78,7 +78,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return () => subscription.unsubscribe()
   }, [supabase.auth])
-
   const fetchOrCreateUser = async (authToken: string, supabaseUser: SupabaseUser) => {
     try {
       // First try to fetch existing user
@@ -91,17 +90,70 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (response.ok) {
         const { user } = await response.json()
         setUser(user)
-      } else {
-        // If user doesn't exist in your database, create one from Supabase user
-        const newUser: User = {
-          id: supabaseUser.id,
-          email: supabaseUser.email || '',
-          firstName: supabaseUser.user_metadata?.firstName || supabaseUser.user_metadata?.full_name?.split(' ')[0] || '',
-          lastName: supabaseUser.user_metadata?.lastName || supabaseUser.user_metadata?.full_name?.split(' ')[1] || '',
-          avatar: supabaseUser.user_metadata?.avatar_url,
-          bio: supabaseUser.user_metadata?.bio
+      } else if (response.status === 404) {
+        // User doesn't exist in database, sync them using our API
+        console.log('User not found in database, syncing...')
+        
+        try {
+          const syncResponse = await fetch('/api/auth/sync-users', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ userId: supabaseUser.id })
+          })
+
+          if (syncResponse.ok) {
+            // After successful sync, try fetching the user again
+            const retryResponse = await fetch('/api/auth/me', {
+              headers: {
+                'Authorization': `Bearer ${authToken}`
+              }
+            })
+
+            if (retryResponse.ok) {
+              const { user } = await retryResponse.json()
+              setUser(user)
+            } else {
+              // Fallback: create user object from Supabase data
+              const newUser: User = {
+                id: supabaseUser.id,
+                email: supabaseUser.email || '',
+                firstName: supabaseUser.user_metadata?.firstName || supabaseUser.user_metadata?.full_name?.split(' ')[0] || '',
+                lastName: supabaseUser.user_metadata?.lastName || supabaseUser.user_metadata?.full_name?.split(' ')[1] || '',
+                avatar: supabaseUser.user_metadata?.avatar_url,
+                bio: supabaseUser.user_metadata?.bio
+              }
+              setUser(newUser)
+            }
+          } else {
+            console.error('Failed to sync user')
+            // Fallback: create user object from Supabase data
+            const newUser: User = {
+              id: supabaseUser.id,
+              email: supabaseUser.email || '',
+              firstName: supabaseUser.user_metadata?.firstName || supabaseUser.user_metadata?.full_name?.split(' ')[0] || '',
+              lastName: supabaseUser.user_metadata?.lastName || supabaseUser.user_metadata?.full_name?.split(' ')[1] || '',
+              avatar: supabaseUser.user_metadata?.avatar_url,
+              bio: supabaseUser.user_metadata?.bio
+            }
+            setUser(newUser)
+          }
+        } catch (syncError) {
+          console.error('Error syncing user:', syncError)
+          // Fallback: create user object from Supabase data
+          const newUser: User = {
+            id: supabaseUser.id,
+            email: supabaseUser.email || '',
+            firstName: supabaseUser.user_metadata?.firstName || supabaseUser.user_metadata?.full_name?.split(' ')[0] || '',
+            lastName: supabaseUser.user_metadata?.lastName || supabaseUser.user_metadata?.full_name?.split(' ')[1] || '',
+            avatar: supabaseUser.user_metadata?.avatar_url,
+            bio: supabaseUser.user_metadata?.bio
+          }
+          setUser(newUser)
         }
-        setUser(newUser)
+      } else {
+        console.error('Unexpected response from /api/auth/me:', response.status)
       }
     } catch (error) {
       console.error('Error fetching/creating user:', error)
