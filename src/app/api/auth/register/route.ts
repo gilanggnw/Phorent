@@ -79,11 +79,9 @@ export async function POST(request: NextRequest) {
         { error: 'Invalid input data', details: error.errors },
         { status: 400 }
       )
-    }
-
-    // Check for Prisma errors
+    }    // Check for Prisma errors
     if (error && typeof error === 'object' && 'code' in error) {
-      const prismaError = error as any
+      const prismaError = error as { code: string; message?: string }
       if (prismaError.code === 'P2002') {
         return NextResponse.json(
           { error: 'User already exists' },
