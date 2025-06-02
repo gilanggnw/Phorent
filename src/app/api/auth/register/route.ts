@@ -1,12 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/utils/supabase/server'
-import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { z } from 'zod'
-
-// Initialize Supabase admin client for database operations
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-const supabaseAdmin = createSupabaseClient(supabaseUrl, supabaseServiceKey)
+import bcrypt from 'bcryptjs'
+import jwt from 'jsonwebtoken'
+import { prisma } from '@/lib/prisma'
 
 const registerSchema = z.object({
   email: z.string().email(),
@@ -21,11 +17,9 @@ export async function POST(request: NextRequest) {
     const { email, password, firstName, lastName } = registerSchema.parse(body)
 
     // Check if user already exists in our database
-    const { data: existingUser } = await supabaseAdmin
-      .from('users')
-      .select('email')
-      .eq('email', email)
-      .single()
+    const existingUser = await prisma.user.findUnique({
+      where: { email }
+    })
 
     if (existingUser) {
       return NextResponse.json(
@@ -34,62 +28,38 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create user with Supabase Auth
-    const supabase = await createClient()
-    
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          firstName,
-          lastName,
-          full_name: `${firstName} ${lastName}`,
-        }
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 12)
+
+    // Create user in our database
+    const user = await prisma.user.create({
+      data: {
+        email,
+        firstName,
+        lastName,
+        password: hashedPassword,
+      },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        createdAt: true
       }
     })
 
-    if (error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 400 }
-      )
-    }
-
-    // Create user in our database
-    if (data.user) {
-      const { data: user, error: dbError } = await supabaseAdmin
-        .from('users')
-        .insert({
-          id: data.user.id,
-          email: data.user.email!,
-          firstName,
-          lastName,
-          password: '', // Empty since using Supabase auth
-        })
-        .select('id, email, firstName, lastName, createdAt')
-        .single()
-
-      if (dbError) {
-        console.error('Database user creation error:', dbError)
-        return NextResponse.json(
-          { error: 'Failed to create user profile' },
-          { status: 500 }
-        )
-      }
-
-      return NextResponse.json({
-        user,
-        token: data.session?.access_token,
-        supabaseSession: data.session,
-        message: 'Registration successful. Please check your email to verify your account.',
-      })
-    }
-
-    return NextResponse.json(
-      { error: 'Registration failed' },
-      { status: 500 }
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: user.id, email: user.email },
+      process.env.JWT_SECRET!,
+      { expiresIn: '7d' }
     )
+
+    return NextResponse.json({
+      user,
+      token,
+      message: 'Registration successful',
+    })
 
   } catch (error) {
     console.error('Registration error:', error)

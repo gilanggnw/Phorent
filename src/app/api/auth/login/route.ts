@@ -1,12 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/utils/supabase/server'
-import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { z } from 'zod'
-
-// Initialize Supabase admin client for database operations
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-const supabaseAdmin = createSupabaseClient(supabaseUrl, supabaseServiceKey)
+import bcrypt from 'bcryptjs'
+import jwt from 'jsonwebtoken'
+import { prisma } from '@/lib/prisma'
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -18,40 +14,55 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { email, password } = loginSchema.parse(body)
 
-    // Use Supabase authentication
-    const supabase = await createClient()
-    
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
+    // Find user in our database
+    const user = await prisma.user.findUnique({
+      where: { email },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        password: true,
+        avatar: true,
+        bio: true,
+        createdAt: true,
+        updatedAt: true
+      }
     })
 
-    if (error) {
+    if (!user) {
       return NextResponse.json(
         { error: 'Invalid credentials' },
         { status: 401 }
       )
     }
 
-    // Get user data from our users table
-    const { data: user, error: userError } = await supabaseAdmin
-      .from('users')
-      .select('id, email, firstName, lastName, avatar, bio, createdAt, updatedAt')
-      .eq('email', email)
-      .single()
-
-    if (userError || !user) {
-      console.error('User lookup error:', userError)
+    // Verify password
+    const isPasswordValid = await bcrypt.compare(password, user.password)
+    if (!isPasswordValid) {
       return NextResponse.json(
-        { error: 'User data not found' },
-        { status: 404 }
+        { error: 'Invalid credentials' },
+        { status: 401 }
       )
-    }
+    }    // Generate JWT token
+    const token = jwt.sign(
+      { userId: user.id, email: user.email },
+      process.env.JWT_SECRET!,
+      { expiresIn: '7d' }
+    )
 
     return NextResponse.json({
-      user,
-      token: data.session?.access_token,
-      supabaseSession: data.session,
+      user: {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        avatar: user.avatar,
+        bio: user.bio,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
+      },
+      token,
     })
 
   } catch (error) {

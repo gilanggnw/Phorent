@@ -1,21 +1,11 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/utils/supabase/server'
 
 export async function POST() {
   try {
-    const supabase = await createClient()
+    // Since we're using JWT tokens, logout is handled client-side
+    // by removing the token from localStorage/cookies
+    // This endpoint just confirms the logout action
     
-    // Sign out from Supabase
-    const { error } = await supabase.auth.signOut()
-    
-    if (error) {
-      console.error('Supabase logout error:', error)
-      return NextResponse.json(
-        { error: 'Failed to logout' },
-        { status: 500 }
-      )
-    }
-
     return NextResponse.json({ message: 'Logged out successfully' })
   } catch (error) {
     console.error('Logout error:', error)

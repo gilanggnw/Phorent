@@ -1,13 +1,9 @@
-import { type NextRequest } from "next/server";
-import { createClient } from "@/utils/supabase/middleware";
+import { type NextRequest, NextResponse } from "next/server";
 
 export async function middleware(request: NextRequest) {
-  const { supabase, response } = createClient(request);
-
-  // Refresh session if expired - required for Server Components
-  await supabase.auth.getSession();
-
-  return response;
+  // For now, just pass through all requests
+  // You can add JWT token validation here if needed for protected routes
+  return NextResponse.next();
 }
 
 export const config = {
