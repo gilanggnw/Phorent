@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Header from "@/components/Header";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface ArtworkForm {
   title: string;
@@ -18,6 +19,7 @@ interface ArtworkForm {
 }
 
 export default function Sell() {
+  const { user, token, isLoading: authLoading } = useAuth();
   const [formData, setFormData] = useState<ArtworkForm>({
     title: "",
     description: "",
@@ -32,7 +34,7 @@ export default function Sell() {
   });
 
   const [dragActive, setDragActive] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
 
   const categories = [
@@ -92,10 +94,9 @@ export default function Sell() {
   const removeFile = (index: number) => {
     const newFiles = formData.files.filter((_, i) => i !== index);
     setFormData({ ...formData, files: newFiles });
-  };
-  const handleSubmit = async (e: React.FormEvent) => {
+  };  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setIsSubmitting(true);
 
     try {
       // Prepare form data for submission
@@ -115,14 +116,16 @@ export default function Sell() {
       };
       
       submitFormData.append('artworkData', JSON.stringify(artworkData));
-      
-      // Add files
+        // Add files
       formData.files.forEach((file) => {
         submitFormData.append('files', file);
       });
 
-      // Get token from localStorage (you'll need to implement auth context)
-      const token = localStorage.getItem('token');
+      // Check if user is authenticated
+      if (!token) {
+        alert('Please log in to upload artwork');
+        return;
+      }
       
       const response = await fetch('/api/artworks', {
         method: 'POST',
@@ -143,13 +146,11 @@ export default function Sell() {
         alert(result.error || 'Failed to upload artwork');
       }
     } catch (error) {
-      console.error('Upload error:', error);
-      alert('Failed to upload artwork. Please try again.');
+      console.error('Upload error:', error);      alert('Failed to upload artwork. Please try again.');
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
-
   const nextStep = () => {
     if (currentStep < 3) setCurrentStep(currentStep + 1);
   };
@@ -157,6 +158,36 @@ export default function Sell() {
   const prevStep = () => {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
+
+  // Show loading state while checking authentication
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Redirect to sign in if not authenticated
+  if (!user || !token) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Authentication Required</h1>
+          <p className="text-gray-600 mb-6">Please sign in to upload your artwork.</p>
+          <a
+            href="/signin"
+            className="inline-block bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700"
+          >
+            Sign In
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -503,13 +534,12 @@ export default function Sell() {
               >
                 Next
               </button>
-            ) : (
-              <button
+            ) : (              <button
                 type="submit"
-                disabled={isLoading || !formData.price}
+                disabled={isSubmitting || !formData.price}
                 className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isLoading ? "Publishing..." : "Publish Artwork"}
+                {isSubmitting ? "Publishing..." : "Publish Artwork"}
               </button>
             )}
           </div>
