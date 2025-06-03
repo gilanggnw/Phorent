@@ -9,11 +9,11 @@ const loginSchema = z.object({
   password: z.string().min(1),
 })
 
-export async function POST(request: NextRequest) {
-  try {
+export async function POST(request: NextRequest) {  try {
     // Check for required environment variables
-    if (!process.env.JWT_SECRET) {
-      console.error('JWT_SECRET environment variable is missing')
+    const jwtSecret = process.env.JWT_SECRET || process.env.SUPABASE_JWT_SECRET
+    if (!jwtSecret) {
+      console.error('JWT_SECRET or SUPABASE_JWT_SECRET environment variable is missing')
       return NextResponse.json(
         { error: 'Server configuration error' },
         { status: 500 }
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
     }    // Generate JWT token
     const token = jwt.sign(
       { userId: user.id, email: user.email },
-      process.env.JWT_SECRET!,
+      jwtSecret,
       { expiresIn: '7d' }
     )
 
