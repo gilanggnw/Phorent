@@ -1,21 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSupabaseUser } from '@/lib/supabase-auth'
 import { prisma } from '@/lib/prisma'
 
-export async function GET(request: NextRequest) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { supabaseUserId: string } }
+) {
   try {
-    const supabaseUser = await getSupabaseUser(request)
-    
-    if (!supabaseUser) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
+    const { supabaseUserId } = params
 
-    // Get user profile from our database
     const user = await prisma.user.findUnique({
-      where: { id: supabaseUser.userId },
+      where: { id: supabaseUserId },
       select: {
         id: true,
         email: true,
@@ -30,16 +24,16 @@ export async function GET(request: NextRequest) {
 
     if (!user) {
       return NextResponse.json(
-        { error: 'User profile not found' },
+        { error: 'User not found' },
         { status: 404 }
       )
     }
 
     return NextResponse.json({ user })
   } catch (error) {
-    console.error('Auth me error:', error)
+    console.error('Profile fetch error:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Failed to fetch user profile' },
       { status: 500 }
     )
   }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient, Prisma } from '@prisma/client'
 import { uploadToCloudinary } from '@/lib/cloudinary'
-import { getTokenFromRequest, verifyJWT } from '@/lib/auth'
+import { getSupabaseUser } from '@/lib/supabase-auth'
 import { z } from 'zod'
 
 // Initialize Prisma client
@@ -21,19 +21,11 @@ const artworkSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    // Check authentication
-    const token = getTokenFromRequest(request)
-    if (!token) {
+    // Check authentication with Supabase
+    const supabaseUser = await getSupabaseUser(request)
+    if (!supabaseUser) {
       return NextResponse.json(
         { error: 'Authentication required' },
-        { status: 401 }
-      )
-    }
-
-    const decoded = verifyJWT(token)
-    if (!decoded) {
-      return NextResponse.json(
-        { error: 'Invalid token' },
         { status: 401 }
       )
     }
@@ -72,7 +64,7 @@ export async function POST(request: NextRequest) {
         dimensions: validatedData.dimensions || null,
         isDigital: validatedData.isDigital || false,
         isCommission: validatedData.isCommission || false,
-        userId: decoded.userId,
+        userId: supabaseUser.userId,
         imageUrl: mainImageUrl,
         status: 'active',
       }
