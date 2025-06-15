@@ -4,10 +4,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCart } from "@/contexts/CartContext";
 
 export default function Header() {
   const pathname = usePathname();
   const { user, signOut, isLoading } = useAuth();
+  const { itemCount } = useCart();
 
   const isActivePage = (path: string) => {
     return pathname === path;
@@ -66,9 +68,22 @@ export default function Header() {
             >
               Contact
             </Link>
-          </div>
+          </div>          <div className="flex items-center space-x-4">
+            {/* Cart Icon */}
+            <Link
+              href="/cart"
+              className="relative p-2 text-gray-600 hover:text-green-600 transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m1.6 8L6 5H4m3 8v7a1 1 0 001 1h8a1 1 0 001-1v-7M9 20h6" />
+              </svg>
+              {itemCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-green-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {itemCount > 99 ? '99+' : itemCount}
+                </span>
+              )}
+            </Link>
 
-          <div className="flex items-center space-x-4">
             {isLoading ? (
               <div className="flex items-center space-x-4">
                 <div className="w-16 h-8 bg-gray-200 rounded animate-pulse"></div>

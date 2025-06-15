@@ -1,144 +1,149 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { formatPrice } from "@/utils/currency";
+import { useCart } from "@/contexts/CartContext";
+import Header from "@/components/Header";
 
 interface Artwork {
-  id: number;
+  id: string;
   title: string;
-  artist: string;
-  price: string;
-  originalPrice?: string;
-  image: string;
-  category: string;
   description: string;
-  fullDescription: string;
-  dimensions: string;
-  medium: string;
-  created: string;
+  category: string;
+  price: number;
   tags: string[];
-  artistAvatar: string;
-  artistBio: string;
-  isDigital: boolean;
-  downloads?: number;
-  views: number;
-  likes: number;
+  imageUrl?: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  userId: string;
+  user: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    avatar?: string;
+  };
+  files: Array<{
+    id: string;
+    fileName: string;
+    fileUrl: string;
+    fileType: string;
+  }>;
 }
 
 export default function ArtworkDetail() {
   const params = useParams();
   const artworkId = params.id as string;
+  const { addItem, isInCart } = useCart();
   
   const [selectedImage, setSelectedImage] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
-  // Mock data - in a real app, this would come from an API
-  const artwork: Artwork = {
-    id: parseInt(artworkId),
-    title: "Modern Abstract Digital Art",
-    artist: "Jane Doe",
-    price: "4500000", // Rp 4,500,000
-    originalPrice: "6000000", // Rp 6,000,000
-    image: "/images/arts/modernabstractdigart.jpg",
-    category: "Digital Art",
-    description: "A stunning modern abstract piece with vibrant colors and dynamic composition.",
-    fullDescription: "This captivating digital artwork represents the intersection of traditional abstract expressionism and contemporary digital techniques. Created using advanced digital painting methods, the piece explores themes of movement, energy, and emotional depth through bold color palettes and dynamic compositional elements. The artwork is available as a high-resolution digital download, perfect for printing on various mediums or digital display. Each purchase includes multiple file formats optimized for different use cases, from web display to large-format printing.",
-    dimensions: "3840 x 2160 pixels",
-    medium: "Digital Painting",
-    created: "2024",
-    tags: ["abstract", "modern", "digital", "colorful", "contemporary"],
-    artistAvatar: "/images/logos/logo_notext_whitebg.png",
-    artistBio: "Jane Doe is a contemporary digital artist specializing in abstract expressionism. With over 10 years of experience in digital art creation, she has sold over 500 pieces worldwide.",
-    isDigital: true,
-    downloads: 143,
-    views: 2847,
-    likes: 89
-  };
+  const [addToCartMessage, setAddToCartMessage] = useState("");
+  const [artwork, setArtwork] = useState<Artwork | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const images = [
-    artwork.image,
-    artwork.image, // In a real app, these would be different images
-    artwork.image,
-  ];
-  const relatedArtworks = [
-    {
-      id: 2,
-      title: "Architecture Draft",
-      artist: "John Smith",
-      price: "2250000", // Rp 2,250,000
-      image: "/images/arts/architecturedraft.jpg",
-    },
-    {
-      id: 3,
-      title: "Logo Design",
-      artist: "Alex Chen",
-      price: "1500000", // Rp 1,500,000
-      image: "/images/arts/logodesign.jpg",
-    },
-    {
-      id: 4,
-      title: "Portrait Commission",
-      artist: "Maria Garcia",
-      price: "6750000", // Rp 6,750,000
-      image: "/images/arts/potraitcommision.jpeg",
-    },
-  ];
+  useEffect(() => {
+    const fetchArtwork = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`/api/artworks/${artworkId}`);
+        
+        if (!response.ok) {
+          throw new Error('Artwork not found');
+        }
+        
+        const data = await response.json();
+        setArtwork(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load artwork');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (artworkId) {
+      fetchArtwork();
+    }  }, [artworkId]);
+
+  const images = artwork ? [
+    artwork.files?.[0]?.fileUrl || artwork.imageUrl || "/images/placeholder.jpg",
+    // Add more images if available
+    ...(artwork.files?.slice(1, 3).map(file => file.fileUrl) || [])
+  ] : [];
 
   const handlePurchase = () => {
-    // Handle purchase logic
+    if (!artwork) return;
     console.log("Purchase artwork:", artwork.id);
   };
 
   const handleAddToCart = () => {
-    // Handle add to cart logic
-    console.log("Add to cart:", artwork.id);
+    if (!artwork) return;
+    
+    const cartItem = {
+      id: artwork.id,
+      title: artwork.title,
+      price: artwork.price,
+      imageUrl: artwork.files?.[0]?.fileUrl || artwork.imageUrl || "/images/placeholder.jpg",
+      artist: {
+        firstName: artwork.user?.firstName || 'Unknown',
+        lastName: artwork.user?.lastName || 'Artist'
+      },
+      isDigital: artwork.category === 'Digital Art'
+    };
+
+    addItem(cartItem);
+    setAddToCartMessage("✅ Added to cart!");
+    
+    // Clear message after 3 seconds
+    setTimeout(() => {
+      setAddToCartMessage("");
+    }, 3000);
   };
 
-  return (
-    <div className="min-h-screen bg-white">
-      {/* Navigation */}
-      <nav className="border-b border-gray-200 bg-white sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
-              <Link href="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
-                <Image
-                  src="/images/logos/logo_notext_whitebg.png"
-                  alt="PhoRent Logo"
-                  width={40}
-                  height={40}
-                  className="object-contain"
-                />
-                <h1 className="text-2xl font-bold text-black">PhoRent</h1>
-              </Link>
-            </div>
-
-            <div className="hidden md:flex items-center space-x-8">
-              <Link href="/browse" className="text-gray-900 hover:text-gray-600">
-                Browse
-              </Link>
-              <Link href="/sell" className="text-gray-900 hover:text-gray-600">
-                Sell
-              </Link>
-              <Link href="/about" className="text-gray-900 hover:text-gray-600">
-                About
-              </Link>
-            </div>
-
-            <div className="flex items-center space-x-4">
-              <Link href="/signin" className="text-gray-900 hover:text-gray-600">
-                Sign In
-              </Link>
-              <Link href="/signup" className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800">
-                Sign Up
-              </Link>
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white">
+        <Header />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading artwork...</p>
             </div>
           </div>
         </div>
-      </nav>
+      </div>
+    );
+  }
+
+  if (error || !artwork) {
+    return (
+      <div className="min-h-screen bg-white">
+        <Header />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center py-12">
+            <div className="text-red-400 text-6xl mb-4">❌</div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Artwork Not Found</h3>
+            <p className="text-gray-600 mb-4">{error || 'The artwork you are looking for does not exist.'}</p>
+            <Link
+              href="/browse"
+              className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700"
+            >
+              Back to Browse
+            </Link>
+          </div>        </div>
+      </div>
+    );
+  }
+
+
+  return (    <div className="min-h-screen bg-white">
+      <Header />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumb */}
@@ -207,22 +212,18 @@ export default function ArtworkDetail() {
           <div className="space-y-6">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">{artwork.title}</h1>
-              <p className="text-lg text-gray-600">by {artwork.artist}</p>
+              <p className="text-lg text-gray-600">by {artwork.user?.firstName} {artwork.user?.lastName}</p>
             </div>            {/* Price */}
             <div className="flex items-center space-x-4">
-              <span className="text-3xl font-bold text-green-600">{formatPrice(parseFloat(artwork.price))}</span>
-              {artwork.originalPrice && (
-                <span className="text-xl text-gray-400 line-through">{formatPrice(parseFloat(artwork.originalPrice))}</span>
-              )}
+              <span className="text-3xl font-bold text-green-600">{formatPrice(artwork.price)}</span>
             </div>
 
             {/* Category and Stats */}
             <div className="flex items-center space-x-6 text-sm text-gray-500">
-              <span className="bg-gray-100 px-3 py-1 rounded-full">{artwork.category}</span>
-              <span>{artwork.views.toLocaleString()} views</span>
-              <span>{artwork.likes} likes</span>
-              {artwork.isDigital && artwork.downloads && (
-                <span>{artwork.downloads} downloads</span>
+              <span className="bg-gray-100 px-3 py-1 rounded-full">{artwork.category}</span>              <span>0 views</span>
+              <span>0 likes</span>
+              {artwork.category === 'Digital Art' && (
+                <span>0 downloads</span>
               )}
             </div>
 
@@ -230,7 +231,7 @@ export default function ArtworkDetail() {
             <div>
               <p className="text-gray-700 mb-2">{artwork.description}</p>
               {showFullDescription && (
-                <p className="text-gray-700">{artwork.fullDescription}</p>
+                <p className="text-gray-700">{artwork.description}</p>
               )}
               <button
                 onClick={() => setShowFullDescription(!showFullDescription)}
@@ -244,15 +245,15 @@ export default function ArtworkDetail() {
             <div className="bg-gray-50 p-4 rounded-lg space-y-2">
               <div className="flex justify-between">
                 <span className="font-medium">Dimensions:</span>
-                <span>{artwork.dimensions}</span>
+                <span>Not specified</span>
               </div>
               <div className="flex justify-between">
                 <span className="font-medium">Medium:</span>
-                <span>{artwork.medium}</span>
+                <span>{artwork.category}</span>
               </div>
               <div className="flex justify-between">
                 <span className="font-medium">Created:</span>
-                <span>{artwork.created}</span>
+                <span>{new Date(artwork.createdAt).toLocaleDateString()}</span>
               </div>
             </div>
 
@@ -269,22 +270,25 @@ export default function ArtworkDetail() {
                   </span>
                 ))}
               </div>
-            </div>
-
-            {/* Action Buttons */}
+            </div>            {/* Action Buttons */}
             <div className="space-y-3">
               <button
                 onClick={handlePurchase}
                 className="w-full bg-green-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-green-700 transition-colors"
               >
-                {artwork.isDigital ? "Buy & Download" : "Purchase Artwork"}
+                {artwork.category === 'Digital Art' ? "Buy & Download" : "Purchase Artwork"}
               </button>
               <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={handleAddToCart}
-                  className="bg-gray-100 text-gray-900 py-2 px-4 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+                  disabled={isInCart(artwork.id.toString())}
+                  className={`py-2 px-4 rounded-lg font-medium transition-colors ${
+                    isInCart(artwork.id.toString())
+                      ? "bg-green-100 text-green-700 cursor-not-allowed"
+                      : "bg-gray-100 text-gray-900 hover:bg-gray-200"
+                  }`}
                 >
-                  Add to Cart
+                  {isInCart(artwork.id.toString()) ? "In Cart" : "Add to Cart"}
                 </button>
                 <button
                   onClick={() => setIsLiked(!isLiked)}
@@ -297,6 +301,13 @@ export default function ArtworkDetail() {
                   {isLiked ? "♥ Liked" : "♡ Like"}
                 </button>
               </div>
+              {addToCartMessage && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                  <p className="text-green-800 text-sm font-medium text-center">
+                    {addToCartMessage}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -304,55 +315,40 @@ export default function ArtworkDetail() {
         {/* Artist Info */}
         <div className="bg-gray-50 p-6 rounded-lg mb-12">
           <div className="flex items-start space-x-4">
-            <Image
-              src={artwork.artistAvatar}
-              alt={artwork.artist}
+            <Image              src={artwork.user?.avatar || "/images/placeholder-avatar.jpg"}
+              alt={`${artwork.user?.firstName} ${artwork.user?.lastName}`}
               width={60}
               height={60}
               className="rounded-full"
             />
             <div className="flex-1">
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                About {artwork.artist}
+                About {artwork.user?.firstName} {artwork.user?.lastName}
               </h3>
-              <p className="text-gray-700 mb-4">{artwork.artistBio}</p>
+              <p className="text-gray-700 mb-4">Artist biography not available.</p>
               <Link
-                href={`/artist/${artwork.artist.toLowerCase().replace(" ", "-")}`}
+                href={`/artist/${artwork.user?.firstName?.toLowerCase()}-${artwork.user?.lastName?.toLowerCase()}`}
                 className="text-green-600 hover:text-green-700 font-medium"
               >
-                View all artworks by {artwork.artist} →
+                View all artworks by {artwork.user?.firstName} {artwork.user?.lastName} →
               </Link>
             </div>
           </div>
         </div>
 
-        {/* Related Artworks */}
-        <div>
+        {/* Related Artworks */}        <div>
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Related Artworks</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {relatedArtworks.map((relatedArt) => (
+            <div className="bg-gray-50 rounded-lg p-8 text-center border-2 border-dashed border-gray-300">
+              <p className="text-gray-500 mb-4">🎨</p>
+              <p className="text-gray-600">Related artworks coming soon!</p>
               <Link
-                key={relatedArt.id}
-                href={`/artwork/${relatedArt.id}`}
-                className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow overflow-hidden border border-gray-200"
+                href="/browse"
+                className="text-green-600 hover:text-green-700 font-medium"
               >
-                <div className="aspect-square bg-gray-200 relative">
-                  <Image
-                    src={relatedArt.image}
-                    alt={relatedArt.title}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <div className="p-4">
-                  <h3 className="font-semibold text-gray-900 mb-1">
-                    {relatedArt.title}
-                  </h3>
-                  <p className="text-gray-600 text-sm mb-2">by {relatedArt.artist}</p>
-                  <span className="text-green-600 font-bold">{formatPrice(parseFloat(relatedArt.price))}</span>
-                </div>
+                Browse all artworks →
               </Link>
-            ))}
+            </div>
           </div>
         </div>
       </div>

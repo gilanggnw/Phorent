@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Header from "@/components/Header";
 import { formatPrice } from "@/utils/currency";
+import { useCart } from "@/contexts/CartContext";
 
 interface Artwork {
   id: string;
@@ -55,6 +56,27 @@ export default function Browse() {
     total: 0,
     pages: 0  });
   
+  const { addItem, isInCart } = useCart();
+  
+  const handleAddToCart = (artwork: Artwork, e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent navigation to artwork detail page
+    e.stopPropagation();
+    
+    const cartItem = {
+      id: artwork.id,
+      title: artwork.title,
+      price: artwork.price,
+      imageUrl: artwork.files?.[0]?.fileUrl || artwork.imageUrl || "/images/placeholder.jpg",
+      artist: {
+        firstName: artwork.user?.firstName || 'Unknown',
+        lastName: artwork.user?.lastName || 'Artist'
+      },
+      isDigital: artwork.category === 'Digital Art'
+    };
+
+    addItem(cartItem);
+  };
+
   const categories = ["All", "Digital Art", "Design", "Drafting", "Traditional Art"];
   const sortOptions = [
     { value: "featured", label: "Featured" },
@@ -238,12 +260,29 @@ export default function Browse() {
                   <p className="text-gray-600 text-sm mb-4 line-clamp-2">
                     {artwork.description}
                   </p>
-                  <Link
-                    href={`/artwork/${artwork.id}`}
-                    className="block w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700 transition-colors text-center"
-                  >
-                    View Details
-                  </Link>
+                  <div className="flex gap-2">
+                    <Link
+                      href={`/artwork/${artwork.id}`}
+                      className="block w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700 transition-colors text-center"
+                    >
+                      View Details
+                    </Link>
+                    <button
+                      onClick={(e) => handleAddToCart(artwork, e)}
+                      className={`flex-1 px-4 py-2 rounded-md font-medium transition-all flex items-center justify-center gap-2 ${
+                        isInCart(artwork.id)
+                          ? "bg-gray-300 text-gray-700 cursor-not-allowed"
+                          : "bg-green-600 text-white hover:bg-green-700"
+                      }`}
+                      disabled={isInCart(artwork.id)}
+                    >
+                      {isInCart(artwork.id) ? (
+                        <>✔ Added to Cart</>
+                      ) : (
+                        <>🛒 Add to Cart</>
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}

@@ -11,6 +11,16 @@ const nextConfig: NextConfig = {
   experimental: {
     typedRoutes: false, // Disable typed routes to prevent the type generation issue
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+        port: '',
+        pathname: '/**',
+      },
+    ],
+  },
 };
 
 export default nextConfig;
