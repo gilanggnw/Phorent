@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { formatPrice } from "@/utils/currency";
 
 interface Artwork {
   id: number;
@@ -34,14 +35,13 @@ export default function ArtworkDetail() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
-
   // Mock data - in a real app, this would come from an API
   const artwork: Artwork = {
     id: parseInt(artworkId),
     title: "Modern Abstract Digital Art",
     artist: "Jane Doe",
-    price: "$299",
-    originalPrice: "$399",
+    price: "4500000", // Rp 4,500,000
+    originalPrice: "6000000", // Rp 6,000,000
     image: "/images/arts/modernabstractdigart.jpg",
     category: "Digital Art",
     description: "A stunning modern abstract piece with vibrant colors and dynamic composition.",
@@ -63,27 +63,26 @@ export default function ArtworkDetail() {
     artwork.image, // In a real app, these would be different images
     artwork.image,
   ];
-
   const relatedArtworks = [
     {
       id: 2,
       title: "Architecture Draft",
       artist: "John Smith",
-      price: "$150",
+      price: "2250000", // Rp 2,250,000
       image: "/images/arts/architecturedraft.jpg",
     },
     {
       id: 3,
       title: "Logo Design",
       artist: "Alex Chen",
-      price: "$99",
+      price: "1500000", // Rp 1,500,000
       image: "/images/arts/logodesign.jpg",
     },
     {
       id: 4,
       title: "Portrait Commission",
       artist: "Maria Garcia",
-      price: "$450",
+      price: "6750000", // Rp 6,750,000
       image: "/images/arts/potraitcommision.jpeg",
     },
   ];
@@ -209,13 +208,11 @@ export default function ArtworkDetail() {
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">{artwork.title}</h1>
               <p className="text-lg text-gray-600">by {artwork.artist}</p>
-            </div>
-
-            {/* Price */}
+            </div>            {/* Price */}
             <div className="flex items-center space-x-4">
-              <span className="text-3xl font-bold text-green-600">{artwork.price}</span>
+              <span className="text-3xl font-bold text-green-600">{formatPrice(parseFloat(artwork.price))}</span>
               {artwork.originalPrice && (
-                <span className="text-xl text-gray-400 line-through">{artwork.originalPrice}</span>
+                <span className="text-xl text-gray-400 line-through">{formatPrice(parseFloat(artwork.originalPrice))}</span>
               )}
             </div>
 
@@ -352,7 +349,7 @@ export default function ArtworkDetail() {
                     {relatedArt.title}
                   </h3>
                   <p className="text-gray-600 text-sm mb-2">by {relatedArt.artist}</p>
-                  <span className="text-green-600 font-bold">{relatedArt.price}</span>
+                  <span className="text-green-600 font-bold">{formatPrice(parseFloat(relatedArt.price))}</span>
                 </div>
               </Link>
             ))}

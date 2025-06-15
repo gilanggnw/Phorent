@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Header from "@/components/Header";
+import { formatPrice } from "@/utils/currency";
 
 interface Artwork {
   id: string;
@@ -15,15 +16,13 @@ interface Artwork {
   imageUrl?: string;
   status: string;
   createdAt: string;
-  updatedAt: string;
-  userId: string;
-  users: {
+  updatedAt: string;  userId: string;
+  user: {
     id: string;
     firstName: string;
     lastName: string;
-    avatar?: string;
-  };
-  artwork_files: Array<{
+    avatar?: string;  };
+  files: Array<{
     id: string;
     fileName: string;
     fileUrl: string;
@@ -216,7 +215,7 @@ export default function Browse() {
                 className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow overflow-hidden border border-gray-200"
               >                <div className="aspect-square bg-gray-200 relative">
                   <Image
-                    src={artwork.artwork_files?.[0]?.fileUrl || artwork.imageUrl || "/images/placeholder.jpg"}
+                    src={artwork.files?.[0]?.fileUrl || artwork.imageUrl || "/images/placeholder.jpg"}
                     alt={artwork.title}
                     fill
                     className="object-cover"
@@ -228,10 +227,10 @@ export default function Browse() {
                       {artwork.title}
                     </h3>
                     <span className="text-green-600 font-bold text-lg">
-                      ${artwork.price}
+                      {formatPrice(artwork.price)}
                     </span>
                   </div>                  <p className="text-gray-600 text-sm mb-1">
-                    by {artwork.users.firstName} {artwork.users.lastName}
+                    by {artwork.user?.firstName || 'Unknown'} {artwork.user?.lastName || 'Artist'}
                   </p>
                   <p className="text-gray-500 text-xs mb-2">
                     {artwork.category}

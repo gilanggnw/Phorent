@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Header from "@/components/Header";
 import { useAuth } from "@/contexts/AuthContext";
+import { formatPrice, calculateNetAmount, PRICING_GUIDELINES } from "@/utils/currency";
 
 interface ArtworkForm {
   title: string;
@@ -450,14 +451,13 @@ export default function Sell() {
             <div className="bg-white p-8 rounded-lg shadow-sm space-y-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Set Your Price</h2>
 
-              <div>
-                <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">
-                  Price (USD) *
+              <div>                <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">
+                  Price (IDR) *
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <span className="text-gray-500 sm:text-sm">$</span>
-                  </div>                  <input
+                    <span className="text-gray-500 sm:text-sm">Rp</span>
+                  </div><input
                     type="number"
                     id="price"
                     name="price"
@@ -469,18 +469,15 @@ export default function Sell() {
                     className="w-full pl-7 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 bg-white"
                     placeholder="0.00"
                   />
-                </div>
-                <p className="mt-2 text-sm text-gray-500">
-                  PhoRent takes a 5% commission on each sale. You&apos;ll receive {formData.price ? `$${(parseFloat(formData.price) * 0.95).toFixed(2)}` : "$0.00"}
+                </div>                <p className="mt-2 text-sm text-gray-500">
+                  PhoRent takes a 5% commission on each sale. You&apos;ll receive {formData.price ? formatPrice(calculateNetAmount(parseFloat(formData.price))) : "Rp 0"}
                 </p>
-              </div>
-
-              <div className="bg-gray-50 p-6 rounded-lg">
-                <h3 className="font-medium text-gray-900 mb-4">Pricing Guidelines</h3>
+              </div>              <div className="bg-gray-50 p-6 rounded-lg">
+                <h3 className="font-medium text-gray-900 mb-4">Pricing Guidelines (IDR)</h3>
                 <ul className="space-y-2 text-sm text-gray-600">
                   <li>• Consider the time, effort, and materials invested</li>
                   <li>• Research similar artworks on our platform</li>
-                  <li>• Digital downloads typically range from $10-$200</li>
+                  <li>• Digital downloads typically range from {formatPrice(PRICING_GUIDELINES.digital.min)} - {formatPrice(PRICING_GUIDELINES.digital.max)}</li>
                   <li>• Physical artworks vary widely based on size and medium</li>
                   <li>• You can always adjust pricing later</li>
                 </ul>
@@ -497,10 +494,9 @@ export default function Sell() {
                   <div className="flex justify-between">
                     <span>Category:</span>
                     <span className="font-medium">{formData.category || "Not set"}</span>
-                  </div>
-                  <div className="flex justify-between">
+                  </div>                  <div className="flex justify-between">
                     <span>Price:</span>
-                    <span className="font-medium">${formData.price || "0.00"}</span>
+                    <span className="font-medium">{formData.price ? formatPrice(parseFloat(formData.price)) : "Rp 0"}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Files uploaded:</span>

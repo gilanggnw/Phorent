@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { randomUUID } from 'crypto';
 
 const prisma = new PrismaClient();
 
@@ -6,141 +7,129 @@ async function main() {
   // Create test users first
   const user1 = await prisma.user.create({
     data: {
+      id: randomUUID(),
       email: 'jane.doe@example.com',
-      password: 'hashedpassword123', // In real app, this would be properly hashed
       firstName: 'Jane',
       lastName: 'Doe',
-      isVerified: true,
     },
   });
 
   const user2 = await prisma.user.create({
     data: {
+      id: randomUUID(),
       email: 'john.smith@example.com',
-      password: 'hashedpassword123',
       firstName: 'John',
       lastName: 'Smith',
-      isVerified: true,
     },
   });
 
   const user3 = await prisma.user.create({
     data: {
+      id: randomUUID(),
       email: 'alex.chen@example.com',
-      password: 'hashedpassword123',
       firstName: 'Alex',
       lastName: 'Chen',
-      isVerified: true,
     },
-  });
-
-  // Create test artworks
+  });  // Create test artworks
   const artwork1 = await prisma.artwork.create({
     data: {
       title: 'Modern Abstract Digital Art',
       description: 'A stunning modern abstract piece with vibrant colors and dynamic composition. Perfect for contemporary spaces.',
       category: 'Digital Art',
-      price: 299,
-      tags: '["abstract", "modern", "digital", "vibrant"]',
+      price: 4500000, // Rp 4,500,000
+      tags: ["abstract", "modern", "digital", "vibrant"],
       medium: 'Digital',
       dimensions: '3840x2160px',
       isDigital: true,
       isCommission: false,
-      status: 'ACTIVE',
+      status: 'active',
+      imageUrl: '/images/arts/modernabstractdigart.jpg',
       userId: user1.id,
     },
-  });
-
-  const artwork2 = await prisma.artwork.create({
+  });  const artwork2 = await prisma.artwork.create({
     data: {
       title: 'Professional Architecture Draft',
       description: 'Professional architectural drafting with precise measurements and detailed specifications for residential projects.',
       category: 'Drafting',
-      price: 150,
-      tags: '["architecture", "technical", "residential", "blueprint"]',
+      price: 2250000, // Rp 2,250,000
+      tags: ["architecture", "technical", "residential", "blueprint"],
       medium: 'Technical Drawing',
       dimensions: 'A1',
       isDigital: false,
       isCommission: true,
-      status: 'ACTIVE',
+      status: 'active',
+      imageUrl: '/images/arts/architecturedraft.jpg',
       userId: user2.id,
     },
-  });
-
-  const artwork3 = await prisma.artwork.create({
+  });  const artwork3 = await prisma.artwork.create({
     data: {
       title: 'Creative Logo Design Package',
       description: 'Complete logo design service for businesses and personal brands. Includes multiple concepts and revisions.',
       category: 'Design',
-      price: 99,
-      tags: '["logo", "branding", "business", "identity"]',
+      price: 1500000, // Rp 1,500,000
+      tags: ["logo", "branding", "business", "identity"],
       medium: 'Vector Graphics',
       dimensions: 'Scalable',
       isDigital: true,
       isCommission: true,
-      status: 'ACTIVE',
+      status: 'active',
+      imageUrl: '/images/arts/logodesign.jpg',
       userId: user3.id,
     },
-  });
-
-  const artwork4 = await prisma.artwork.create({
+  });  const artwork4 = await prisma.artwork.create({
     data: {
       title: 'Custom Portrait Commission',
       description: 'Beautiful custom portrait commission using traditional painting techniques. Hand-painted with attention to detail.',
       category: 'Traditional Art',
-      price: 450,
-      tags: '["portrait", "traditional", "custom", "painting"]',
+      price: 6750000, // Rp 6,750,000
+      tags: ["portrait", "traditional", "custom", "painting"],
       medium: 'Oil on Canvas',
       dimensions: '16x20 inches',
       isDigital: false,
       isCommission: true,
-      status: 'ACTIVE',
+      status: 'active',
+      imageUrl: '/images/arts/potraitcommision.jpeg',
       userId: user1.id,
     },
   });
-
   // Create artwork files (sample images)
   await prisma.artworkFile.create({
     data: {
       artworkId: artwork1.id,
-      filename: 'modern-abstract.jpg',
-      url: '/images/arts/modernabstractdigart.jpg',
-      type: 'image/jpeg',
-      size: 1024000,
-      order: 1,
+      fileName: 'modern-abstract.jpg',
+      fileUrl: '/images/arts/modernabstractdigart.jpg',
+      fileType: 'image/jpeg',
+      fileSize: 1024000,
     },
   });
 
   await prisma.artworkFile.create({
     data: {
       artworkId: artwork2.id,
-      filename: 'architecture-draft.jpg',
-      url: '/images/arts/architecturedraft.jpg',
-      type: 'image/jpeg',
-      size: 2048000,
-      order: 1,
+      fileName: 'architecture-draft.jpg',
+      fileUrl: '/images/arts/architecturedraft.jpg',
+      fileType: 'image/jpeg',
+      fileSize: 2048000,
     },
   });
 
   await prisma.artworkFile.create({
     data: {
       artworkId: artwork3.id,
-      filename: 'logo-design.jpg',
-      url: '/images/arts/logodesign.jpg',
-      type: 'image/jpeg',
-      size: 512000,
-      order: 1,
+      fileName: 'logo-design.jpg',
+      fileUrl: '/images/arts/logodesign.jpg',
+      fileType: 'image/jpeg',
+      fileSize: 512000,
     },
   });
 
   await prisma.artworkFile.create({
     data: {
       artworkId: artwork4.id,
-      filename: 'portrait-commission.jpg',
-      url: '/images/arts/potraitcommision.jpeg',
-      type: 'image/jpeg',
-      size: 1536000,
-      order: 1,
+      fileName: 'portrait-commission.jpg',
+      fileUrl: '/images/arts/potraitcommision.jpeg',
+      fileType: 'image/jpeg',
+      fileSize: 1536000,
     },
   });
 
