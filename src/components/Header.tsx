@@ -48,8 +48,7 @@ export default function Header() {
               }
             >
               Sell
-            </Link>
-            <Link
+            </Link>            <Link
               href="/about"
               className={isActivePage("/about") 
                 ? "text-green-600 font-medium" 
@@ -57,6 +56,15 @@ export default function Header() {
               }
             >
               About
+            </Link>
+            <Link
+              href="/contact"
+              className={isActivePage("/contact") 
+                ? "text-green-600 font-medium" 
+                : "text-gray-900 hover:text-gray-600"
+              }
+            >
+              Contact
             </Link>
           </div>
 
