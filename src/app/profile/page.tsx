@@ -13,10 +13,12 @@ interface UserArtwork {
   title: string;
   description: string;
   category: string;
-  price: number;
+  price: number; // Will be converted from Decimal
   status: string;
   imageUrl?: string;
   createdAt: string;
+  updatedAt: string;
+  userId: string;
   files: Array<{
     id: string;
     fileName: string;
@@ -54,10 +56,16 @@ export default function ProfilePage() {
       setIsLoading(true);
       
       // Fetch user's artworks
+      console.log('Fetching artworks for user ID:', user?.id);
       const artworksResponse = await fetch(`/api/artworks?userId=${user?.id}`);
-      if (artworksResponse.ok) {
-        const artworks = await artworksResponse.json();
-        setUserArtworks(artworks);
+      console.log('Artworks response status:', artworksResponse.status);
+        if (artworksResponse.ok) {
+        const data = await artworksResponse.json();
+        console.log('Fetched artworks data:', data);
+        // The API returns data in format: { success: true, artworks: [...] }
+        setUserArtworks(data.artworks || []);
+      } else {
+        console.error('Failed to fetch artworks:', artworksResponse.status);
       }
       
       // TODO: Fetch order history when order system is implemented
@@ -178,8 +186,7 @@ export default function ProfilePage() {
             </div>
             
             <div className="flex-grow">
-              <div className="flex items-center justify-between mb-4">
-                <div>
+              <div className="flex items-center justify-between mb-4">                <div>
                   <h1 className="text-2xl font-bold text-gray-900">
                     {user.firstName} {user.lastName}
                   </h1>
@@ -363,12 +370,14 @@ export default function ProfilePage() {
                         </div>
                       </div>
                     ))}
-                  </div>
-                ) : (
+                  </div>                ) : (
                   <div className="text-center py-12">
                     <div className="text-gray-400 text-6xl mb-4">🎨</div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">No Artworks Yet</h3>
-                    <p className="text-gray-600 mb-4">Start selling your art by listing your first artwork.</p>
+                    <p className="text-gray-600 mb-2">Start selling your art by listing your first artwork.</p>
+                    <p className="text-sm text-gray-500 mb-4">
+                      Note: Only artworks uploaded by your account will appear here.
+                    </p>
                     <Link
                       href="/sell"
                       className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 transition-colors"

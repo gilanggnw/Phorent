@@ -1,36 +1,42 @@
 import { PrismaClient } from '@prisma/client';
-import { randomUUID } from 'crypto';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  // Create test users first
-  const user1 = await prisma.user.create({
-    data: {
-      id: randomUUID(),
+  // Create test users with fixed UUIDs for testing
+  // These can match test accounts or be used for demo purposes
+  const user1 = await prisma.user.upsert({
+    where: { email: 'jane.doe@example.com' },
+    update: {},
+    create: {
+      id: '550e8400-e29b-41d4-a716-446655440001', // Fixed UUID
       email: 'jane.doe@example.com',
       firstName: 'Jane',
       lastName: 'Doe',
     },
   });
 
-  const user2 = await prisma.user.create({
-    data: {
-      id: randomUUID(),
+  const user2 = await prisma.user.upsert({
+    where: { email: 'john.smith@example.com' },
+    update: {},
+    create: {
+      id: '550e8400-e29b-41d4-a716-446655440002', // Fixed UUID
       email: 'john.smith@example.com',
       firstName: 'John',
       lastName: 'Smith',
     },
   });
 
-  const user3 = await prisma.user.create({
-    data: {
-      id: randomUUID(),
+  const user3 = await prisma.user.upsert({
+    where: { email: 'alex.chen@example.com' },
+    update: {},
+    create: {
+      id: '550e8400-e29b-41d4-a716-446655440003', // Fixed UUID
       email: 'alex.chen@example.com',
       firstName: 'Alex',
       lastName: 'Chen',
     },
-  });  // Create test artworks
+  });// Create test artworks
   const artwork1 = await prisma.artwork.create({
     data: {
       title: 'Modern Abstract Digital Art',

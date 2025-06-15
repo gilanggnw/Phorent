@@ -124,11 +124,12 @@ export async function GET(request: NextRequest) {
     const userId = searchParams.get('userId') // Add userId filter
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '12')
-    const skip = (page - 1) * limit
+    const skip = (page - 1) * limit    // Build where clause
+    const where: Prisma.ArtworkWhereInput = {}
 
-    // Build where clause
-    const where: Prisma.ArtworkWhereInput = {
-      status: 'active'
+    // Only filter by status if not fetching user's own artworks
+    if (!userId) {
+      where.status = 'active'
     }
 
     if (category && category !== 'all') {
