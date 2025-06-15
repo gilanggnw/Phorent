@@ -121,9 +121,12 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category')
     const search = searchParams.get('search')
     const sortBy = searchParams.get('sortBy') || 'featured'
+    const userId = searchParams.get('userId') // Add userId filter
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '12')
-    const skip = (page - 1) * limit    // Build where clause
+    const skip = (page - 1) * limit
+
+    // Build where clause
     const where: Prisma.ArtworkWhereInput = {
       status: 'active'
     }
@@ -137,7 +140,14 @@ export async function GET(request: NextRequest) {
         { title: { contains: search, mode: 'insensitive' } },
         { description: { contains: search, mode: 'insensitive' } }
       ]
-    }    // Build orderBy clause
+    }
+
+    // Add userId filter for user's own artworks
+    if (userId) {
+      where.userId = userId
+    }
+
+    // Build orderBy clause
     let orderBy: Prisma.ArtworkOrderByWithRelationInput = { createdAt: 'desc' } // default: newest
 
     switch (sortBy) {

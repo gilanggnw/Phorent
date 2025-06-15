@@ -88,10 +88,9 @@ export default function Header() {
               <div className="flex items-center space-x-4">
                 <div className="w-16 h-8 bg-gray-200 rounded animate-pulse"></div>
                 <div className="w-20 h-8 bg-gray-200 rounded animate-pulse"></div>
-              </div>
-            ) : user ? (
+              </div>            ) : user ? (
               <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-2">
+                <Link href="/profile" className="flex items-center space-x-2 hover:text-green-600 transition-colors">
                   {user.avatar ? (
                     <Image
                       src={user.avatar}
@@ -110,7 +109,7 @@ export default function Header() {
                   <span className="text-gray-900 hidden md:block">
                     {user.firstName} {user.lastName}
                   </span>
-                </div>
+                </Link>
                 <button
                   onClick={signOut}
                   className="text-gray-900 hover:text-gray-600 transition-colors"
